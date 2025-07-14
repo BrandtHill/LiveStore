@@ -15,16 +15,27 @@
         bg-white flex-col items-end px-4 gap-3 pb-4 
         hidden peer-checked:flex 
         md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0">
-        
-        <.link :if={@current_user && @current_user.admin} href={~p"/products"} class="px-3 py-2 rounded hover:bg-gray-200">
+        <.link
+          :if={@current_user && @current_user.admin}
+          href={~p"/products"}
+          class="px-3 py-2 rounded hover:bg-gray-200"
+        >
           <.icon name="hero-wrench" /> Products
         </.link>
 
-        <.link :if={@current_user} href={~p"/users/settings"} class="px-3 py-2 rounded hover:bg-gray-200">
+        <.link
+          :if={@current_user}
+          href={~p"/users/settings"}
+          class="px-3 py-2 rounded hover:bg-gray-200"
+        >
           <.icon name="hero-user" /> Account
         </.link>
 
-        <.link :if={is_nil @current_user} href={~p"/users/log_in"} class="px-3 py-2 rounded hover:bg-gray-200">
+        <.link
+          :if={is_nil(@current_user)}
+          href={~p"/users/log_in"}
+          class="px-3 py-2 rounded hover:bg-gray-200"
+        >
           <.icon name="hero-user" /> Login
         </.link>
 

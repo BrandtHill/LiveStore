@@ -3,6 +3,7 @@ defmodule LiveStore.Store.Cart do
   import Ecto.Changeset
 
   alias LiveStore.Accounts.User
+  alias LiveStore.Store.CartItem
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id

@@ -22,6 +22,10 @@ defmodule LiveStoreWeb.Router do
 
     get "/", PageController, :home
 
+    live_session :shop, on_mount: [{LiveStoreWeb.UserAuth, :mount_current_user}] do
+      live "/shop", ShopLive.Index, :index
+    end
+
     live_session :product_admin, on_mount: [{LiveStoreWeb.UserAuth, :ensure_admin}] do
       live "/products", ProductLive.Index, :index
       live "/products/new", ProductLive.Index, :new

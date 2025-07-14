@@ -75,7 +75,6 @@ defmodule LiveStoreWeb.VariantLive.FormComponent do
   @impl true
   def handle_event("validate", %{"variant" => variant_params}, socket) do
     changeset = Store.change_variant(socket.assigns.variant, variant_params)
-    to_form(changeset, action: :validate).params |> IO.inspect(label: "FORM")
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 

@@ -42,13 +42,6 @@ defmodule LiveStoreWeb.VariantLive.Index do
   end
 
   @impl true
-  def handle_event(event, params, socket) do
-    IO.puts("Event: #{event}")
-    IO.inspect(params, label: "Params")
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_info({LiveStoreWeb.VariantLive.FormComponent, {:saved, variant}}, socket) do
     socket =
       socket

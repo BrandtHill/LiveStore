@@ -195,6 +195,8 @@ defmodule LiveStoreWeb.ProductLive.FormComponent do
   end
 
   def handle_event("cancel_img", %{"ref" => ref}, socket) do
+    socket = cancel_upload(socket, :new_images, ref)
+
     all_images =
       socket.assigns.all_images
       |> Enum.reject(&(&1.ref == ref))
