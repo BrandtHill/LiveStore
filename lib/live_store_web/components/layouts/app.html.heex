@@ -17,7 +17,7 @@
         md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0">
         <.link
           :if={@current_user && @current_user.admin}
-          href={~p"/products"}
+          href={~p"/admin/products"}
           class="px-3 py-2 rounded hover:bg-gray-200"
         >
           <.icon name="hero-wrench" /> Products

@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.ProductLive.Show do
+defmodule LiveStoreWeb.Admin.ProductLive.Show do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
@@ -17,7 +17,7 @@ defmodule LiveStoreWeb.ProductLive.Show do
   end
 
   @impl true
-  def handle_info({LiveStoreWeb.ProductLive.FormComponent, {:saved, _product}}, socket) do
+  def handle_info({LiveStoreWeb.Admin.ProductLive.FormComponent, {:saved, _product}}, socket) do
     {:noreply, socket}
   end
 

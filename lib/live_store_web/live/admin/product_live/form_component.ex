@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.ProductLive.FormComponent do
+defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
   use LiveStoreWeb, :live_component
 
   alias LiveStore.Store

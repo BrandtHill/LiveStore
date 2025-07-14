@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.VariantLive.FormComponent do
+defmodule LiveStoreWeb.Admin.VariantLive.FormComponent do
   use LiveStoreWeb, :live_component
 
   alias LiveStore.Store
@@ -44,7 +44,7 @@ defmodule LiveStoreWeb.VariantLive.FormComponent do
   end
 
   defp get_attr(variant, attr_type),
-    do: LiveStoreWeb.VariantLive.Index.get_attr(variant, attr_type)
+    do: LiveStoreWeb.Admin.VariantLive.Index.get_attr(variant, attr_type)
 
   defp get_attr_errors(%Ecto.Changeset{changes: %{attributes: [_ | _] = attributes}}, attr_type) do
     Enum.find(attributes, &(&1.changes[:type] == attr_type)).errors

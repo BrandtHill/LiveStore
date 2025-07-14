@@ -1,7 +1,7 @@
 <.header>
   Listing Products
   <:actions>
-    <.link patch={~p"/products/new"}>
+    <.link patch={~p"/admin/products/new"}>
       <.button>New Product</.button>
     </.link>
   </:actions>
@@ -10,7 +10,7 @@
 <.table
   id="products"
   rows={@streams.products}
-  row_click={fn {_id, product} -> JS.navigate(~p"/products/#{product}") end}
+  row_click={fn {_id, product} -> JS.navigate(~p"/admin/products/#{product}") end}
 >
   <:col :let={{_id, product}} label="Name">{product.name}</:col>
   <:col :let={{_id, product}} label="Description">{preview(product.description)}</:col>
@@ -20,13 +20,13 @@
   </:col>
 
   <:action :let={{_id, product}}>
-    <.link navigate={~p"/products/#{product}/variants"}>Manage Variants</.link>
+    <.link navigate={~p"/admin/products/#{product}/variants"}>Manage Variants</.link>
   </:action>
   <:action :let={{_id, product}}>
     <div class="sr-only">
-      <.link navigate={~p"/products/#{product}"}>Show</.link>
+      <.link navigate={~p"/admin/products/#{product}"}>Show</.link>
     </div>
-    <.link patch={~p"/products/#{product}/edit"}>Edit</.link>
+    <.link patch={~p"/admin/products/#{product}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, product}}>
     <.link
@@ -42,14 +42,14 @@
   :if={@live_action in [:new, :edit]}
   id="product-modal"
   show
-  on_cancel={JS.patch(~p"/products")}
+  on_cancel={JS.patch(~p"/admin/products")}
 >
   <.live_component
-    module={LiveStoreWeb.ProductLive.FormComponent}
+    module={LiveStoreWeb.Admin.ProductLive.FormComponent}
     id={@product.id || :new}
     title={@page_title}
     action={@live_action}
     product={@product}
-    patch={~p"/products"}
+    patch={~p"/admin/products"}
   />
 </.modal>

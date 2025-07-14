@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.ProductLive.Index do
+defmodule LiveStoreWeb.Admin.ProductLive.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
@@ -33,7 +33,7 @@ defmodule LiveStoreWeb.ProductLive.Index do
   end
 
   @impl true
-  def handle_info({LiveStoreWeb.ProductLive.FormComponent, {:saved, product}}, socket) do
+  def handle_info({LiveStoreWeb.Admin.ProductLive.FormComponent, {:saved, product}}, socket) do
     {:noreply, stream_insert(socket, :products, product)}
   end
 

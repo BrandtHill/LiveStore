@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.VariantLive.Index do
+defmodule LiveStoreWeb.Admin.VariantLive.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
@@ -42,7 +42,7 @@ defmodule LiveStoreWeb.VariantLive.Index do
   end
 
   @impl true
-  def handle_info({LiveStoreWeb.VariantLive.FormComponent, {:saved, variant}}, socket) do
+  def handle_info({LiveStoreWeb.Admin.VariantLive.FormComponent, {:saved, variant}}, socket) do
     socket =
       socket
       |> stream_insert(:variants, variant)

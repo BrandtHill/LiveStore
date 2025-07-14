@@ -1,7 +1,7 @@
 <.header>
   Listing Variants for {@product.id}
   <:actions>
-    <.link patch={~p"/products/#{@product}/variants/new"}>
+    <.link patch={~p"/admin/products/#{@product}/variants/new"}>
       <.button>New Variant</.button>
     </.link>
   </:actions>
@@ -16,7 +16,7 @@
   </:col>
 
   <:action :let={{_id, variant}}>
-    <.link patch={~p"/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
+    <.link patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, variant}}>
     <.link
@@ -28,21 +28,21 @@
   </:action>
 </.table>
 
-<.back navigate={~p"/products/#{@product}"}>Back to product</.back>
+<.back navigate={~p"/admin/products/#{@product}"}>Back to product</.back>
 
 <.modal
   :if={@live_action in [:new, :edit]}
   id="variant-modal"
   show
-  on_cancel={JS.patch(~p"/products/#{@product}/variants")}
+  on_cancel={JS.patch(~p"/admin/products/#{@product}/variants")}
 >
   <.live_component
-    module={LiveStoreWeb.VariantLive.FormComponent}
+    module={LiveStoreWeb.Admin.VariantLive.FormComponent}
     id={@variant.id || :new}
     title={@page_title}
     action={@live_action}
     product={@product}
     variant={@variant}
-    patch={~p"/products/#{@product}/variants"}
+    patch={~p"/admin/products/#{@product}/variants"}
   />
 </.modal>
