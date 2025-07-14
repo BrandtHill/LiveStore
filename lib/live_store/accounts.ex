@@ -350,4 +350,10 @@ defmodule LiveStore.Accounts do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
+  def make_user_admin(user) do
+    user
+    |> User.admin_changeset()
+    |> Repo.update()
+  end
 end

@@ -12,6 +12,15 @@ defmodule LiveStoreWeb.UserSettingsLive do
 
     <div class="space-y-12 divide-y">
       <div>
+        <.link
+          href={~p"/users/log_out"}
+          method="delete"
+          class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm bg-zinc-900 hover:bg-zinc-700"
+        >
+          Log out
+        </.link>
+      </div>
+      <div>
         <.simple_form
           for={@email_form}
           id="email_form"

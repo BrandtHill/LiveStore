@@ -4,9 +4,19 @@ defmodule LiveStoreWeb.ProductLiveTest do
   import Phoenix.LiveViewTest
   import LiveStore.StoreFixtures
 
-  @create_attrs %{code: "some code", name: "some name", description: "some description", price: 42, thumbnail: "some thumbnail"}
-  @update_attrs %{code: "some updated code", name: "some updated name", description: "some updated description", price: 43, thumbnail: "some updated thumbnail"}
-  @invalid_attrs %{code: nil, name: nil, description: nil, price: nil, thumbnail: nil}
+  @create_attrs %{
+    name: "some name",
+    description: "some description",
+    price: 42,
+    thumbnail: "some thumbnail"
+  }
+  @update_attrs %{
+    name: "some updated name",
+    description: "some updated description",
+    price: 43,
+    thumbnail: "some updated thumbnail"
+  }
+  @invalid_attrs %{name: nil, description: nil, price: nil, thumbnail: nil}
 
   defp create_product(_) do
     product = product_fixture()
@@ -20,7 +30,7 @@ defmodule LiveStoreWeb.ProductLiveTest do
       {:ok, _index_live, html} = live(conn, ~p"/products")
 
       assert html =~ "Listing Products"
-      assert html =~ product.code
+      assert html =~ product.name
     end
 
     test "saves new product", %{conn: conn} do
@@ -84,7 +94,7 @@ defmodule LiveStoreWeb.ProductLiveTest do
       {:ok, _show_live, html} = live(conn, ~p"/products/#{product}")
 
       assert html =~ "Show Product"
-      assert html =~ product.code
+      assert html =~ product.name
     end
 
     test "updates product within modal", %{conn: conn, product: product} do

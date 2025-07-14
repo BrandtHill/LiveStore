@@ -6,99 +6,116 @@ defmodule LiveStore.Store do
   import Ecto.Query, warn: false
   alias LiveStore.Repo
 
+  alias LiveStore.Store.Image
   alias LiveStore.Store.Product
+  alias LiveStore.Store.Variant
 
-  @doc """
-  Returns the list of products.
+  ## Products
 
-  ## Examples
-
-      iex> list_products()
-      [%Product{}, ...]
-
-  """
   def list_products do
     Repo.all(Product)
   end
 
-  @doc """
-  Gets a single product.
-
-  Raises `Ecto.NoResultsError` if the Product does not exist.
-
-  ## Examples
-
-      iex> get_product!(123)
-      %Product{}
-
-      iex> get_product!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_product!(id), do: Repo.get!(Product, id)
-
-  @doc """
-  Creates a product.
-
-  ## Examples
-
-      iex> create_product(%{field: value})
-      {:ok, %Product{}}
-
-      iex> create_product(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_product(attrs \\ %{}) do
-    %Product{}
-    |> Product.changeset(attrs)
-    |> Repo.insert()
+  def get_product!(id) do
+    Product
+    |> Repo.get!(id)
+    |> Repo.preload([:variants, :images])
   end
 
-  @doc """
-  Updates a product.
+  # def create_product(params \\ %{}) do
+  #   %Product{}
+  #   |> Product.changeset(params)
+  #   |> Repo.insert()
+  # end
 
-  ## Examples
+  # def update_product(%Product{} = product, params) do
+  #   product
+  #   |> Product.changeset(params)
+  #   |> Repo.update()
+  # end
 
-      iex> update_product(product, %{field: new_value})
-      {:ok, %Product{}}
-
-      iex> update_product(product, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_product(%Product{} = product, attrs) do
+  def upsert_product(product \\ %Product{}, params) do
     product
-    |> Product.changeset(attrs)
-    |> Repo.update()
+    |> Product.changeset(params)
+    |> Repo.insert_or_update()
   end
 
-  @doc """
-  Deletes a product.
-
-  ## Examples
-
-      iex> delete_product(product)
-      {:ok, %Product{}}
-
-      iex> delete_product(product)
-      {:error, %Ecto.Changeset{}}
-
-  """
   def delete_product(%Product{} = product) do
     Repo.delete(product)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking product changes.
+  def change_product(%Product{} = product, params \\ %{}) do
+    Product.changeset(product, params)
+  end
 
-  ## Examples
+  def preload_variants(%Product{} = product) do
+    Repo.preload(product, :variants, force: true)
+  end
 
-      iex> change_product(product)
-      %Ecto.Changeset{data: %Product{}}
+  ## Variants
 
-  """
-  def change_product(%Product{} = product, attrs \\ %{}) do
-    Product.changeset(product, attrs)
+  def get_variants(%Product{id: id}), do: get_variants(id)
+
+  def get_variants(product_id) do
+    Repo.all(from Variant, where: [product_id: ^product_id])
+  end
+
+  def get_variant(variant_id), do: Repo.get(Variant, variant_id)
+
+  def build_variant(%Product{} = product) do
+    %Variant{} = Ecto.build_assoc(product, :variants)
+  end
+
+  # def create_variant(%Product{} = product, params) do
+  #   product
+  #   |> build_variant()
+  #   |> Variant.changeset(params)
+  #   |> Repo.insert()
+  # end
+
+  # def update_variant(%Variant{} = variant, params) do
+  #   variant
+  #   |> Variant.changeset(params)
+  #   |> Repo.update()
+  # end
+
+  def upsert_variant(%Variant{} = variant, params) do
+    variant
+    |> Variant.changeset(params)
+    |> Repo.insert_or_update()
+  end
+
+  def change_variant(%Variant{} = variant, params \\ %{}) do
+    Variant.changeset(variant, params)
+  end
+
+  def insert_image(path) do
+    Repo.insert(Image.changeset(%{path: path}))
+  end
+
+  def bulk_upsert_images(images) do
+    images =
+      Enum.map(
+        images,
+        fn i ->
+          i
+          |> Map.put(:inserted_at, {:placeholder, :timestamp})
+          |> Map.put(:updated_at, {:placeholder, :timestamp})
+          |> Map.put_new_lazy(:id, &UUIDv7.generate/0)
+        end
+      )
+
+    Repo.insert_all(Image, images,
+      returning: true,
+      placeholders: %{timestamp: DateTime.utc_now()},
+      conflict_target: [:id],
+      on_conflict: {:replace_all_except, [:id, :inserted_at]}
+    )
+  end
+
+  def delete_image(%Image{} = image) do
+    image
+    |> Image.changeset(%{})
+    |> Repo.delete()
   end
 end

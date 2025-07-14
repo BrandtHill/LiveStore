@@ -33,6 +33,12 @@ defmodule LiveStoreWeb.UserRegistrationLive do
 
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
+        <.input
+          field={@form[:password_confirmation]}
+          type="password"
+          label="Confirm Password"
+          required
+        />
 
         <:actions>
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>

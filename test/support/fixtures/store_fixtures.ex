@@ -11,7 +11,6 @@ defmodule LiveStore.StoreFixtures do
     {:ok, product} =
       attrs
       |> Enum.into(%{
-        code: "some code",
         description: "some description",
         name: "some name",
         price: 42,

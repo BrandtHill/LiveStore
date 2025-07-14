@@ -3,3 +3,9 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+/* Ensure the input itself doesn't show text */
+.custom-file-input {
+  color: transparent; /* Hide any text */
+  width: auto; /* Fit to button size */
+}

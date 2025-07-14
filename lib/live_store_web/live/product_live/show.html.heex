@@ -2,6 +2,9 @@
   Product {@product.id}
   <:subtitle>This is a product record from your database.</:subtitle>
   <:actions>
+    <.link navigate={~p"/products/#{@product}/variants"}>
+      <.button>Manage Variants</.button>
+    </.link>
     <.link patch={~p"/products/#{@product}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit product</.button>
     </.link>
@@ -10,15 +13,34 @@
 
 <.list>
   <:item title="Name">{@product.name}</:item>
-  <:item title="Description">{@product.description}</:item>
-  <:item title="Price">{@product.price}</:item>
-  <:item title="Thumbnail">{@product.thumbnail}</:item>
-  <:item title="Code">{@product.code}</:item>
+  <:item title="Description">
+    <div class="prose prose-sm max-w-none">
+      {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
+    </div>
+  </:item>
+  <:item title="Price">{money(@product.price)}</:item>
+  <:item title="Product Attributes">
+    <ul class="list-disc list-inside">
+      <li :for={attr_type <- @product.attribute_types}>{attr_type}</li>
+    </ul>
+  </:item>
+  <:item title="Product Images">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-4">
+      <div :for={image <- @product.images} class="image-row flex flex-col items-center gap-2">
+        <img src={~p"/uploads/#{image.path}"} class="aspect-square object-cover w-48 rounded-lg" />
+      </div>
+    </div>
+  </:item>
 </.list>
 
 <.back navigate={~p"/products"}>Back to products</.back>
 
-<.modal :if={@live_action == :edit} id="product-modal" show on_cancel={JS.patch(~p"/products/#{@product}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="product-modal"
+  show
+  on_cancel={JS.patch(~p"/products/#{@product}")}
+>
   <.live_component
     module={LiveStoreWeb.ProductLive.FormComponent}
     id={@product.id}

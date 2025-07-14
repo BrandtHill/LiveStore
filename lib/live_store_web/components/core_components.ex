@@ -673,4 +673,25 @@ defmodule LiveStoreWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  def money(nil), do: nil
+  def money(""), do: nil
+  def money(amount) when is_integer(amount), do: amount |> Money.new(:USD) |> Money.to_string()
+
+  def money(amount) when is_binary(amount) do
+    case Integer.parse(amount) do
+      {int, _} -> money(int)
+      :error -> money(nil)
+    end
+  end
+
+  def preview(nil), do: nil
+
+  def preview(text) when is_binary(text) do
+    if String.length(text) <= 120 do
+      text
+    else
+      [String.slice(text, 0, 120), "..."]
+    end
+  end
 end

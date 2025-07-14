@@ -22,12 +22,18 @@ defmodule LiveStoreWeb.Router do
 
     get "/", PageController, :home
 
-    live "/products", ProductLive.Index, :index
-    live "/products/new", ProductLive.Index, :new
-    live "/products/:id/edit", ProductLive.Index, :edit
+    live_session :product_admin, on_mount: [{LiveStoreWeb.UserAuth, :ensure_admin}] do
+      live "/products", ProductLive.Index, :index
+      live "/products/new", ProductLive.Index, :new
+      live "/products/:id/edit", ProductLive.Index, :edit
 
-    live "/products/:id", ProductLive.Show, :show
-    live "/products/:id/show/edit", ProductLive.Show, :edit
+      live "/products/:id", ProductLive.Show, :show
+      live "/products/:id/show/edit", ProductLive.Show, :edit
+
+      live "/products/:id/variants", VariantLive.Index, :index
+      live "/products/:id/variants/new", VariantLive.Index, :new
+      live "/products/:id/variants/:variant_id/edit", VariantLive.Index, :edit
+    end
   end
 
   # Other scopes may use custom stacks.

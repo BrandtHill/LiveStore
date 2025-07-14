@@ -12,6 +12,7 @@ defmodule LiveStore.Accounts.User do
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime_usec
+    field :admin, :boolean, default: false
 
     timestamps()
   end
@@ -51,6 +52,7 @@ defmodule LiveStore.Accounts.User do
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
+    |> unique_constraint(:email)
     |> maybe_validate_unique_email(opts)
   end
 
@@ -60,7 +62,10 @@ defmodule LiveStore.Accounts.User do
     |> validate_length(:password, min: 10, max: 72)
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
-    |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
+    |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
+      message: "at least one digit or special character"
+    )
+    |> validate_confirmation(:password)
     |> maybe_hash_password(opts)
   end
 
@@ -83,9 +88,7 @@ defmodule LiveStore.Accounts.User do
 
   defp maybe_validate_unique_email(changeset, opts) do
     if Keyword.get(opts, :validate_email, true) do
-      changeset
-      |> unsafe_validate_unique(:email, LiveStore.Repo)
-      |> unique_constraint(:email)
+      unsafe_validate_unique(changeset, :email, LiveStore.Repo)
     else
       changeset
     end
@@ -159,5 +162,9 @@ defmodule LiveStore.Accounts.User do
     else
       add_error(changeset, :current_password, "is not valid")
     end
+  end
+
+  def admin_changeset(%__MODULE__{} = user, is_admin? \\ true) do
+    change(user, admin: is_admin?)
   end
 end

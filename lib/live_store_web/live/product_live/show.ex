@@ -16,6 +16,11 @@ defmodule LiveStoreWeb.ProductLive.Show do
      |> assign(:product, Store.get_product!(id))}
   end
 
+  @impl true
+  def handle_info({LiveStoreWeb.ProductLive.FormComponent, {:saved, _product}}, socket) do
+    {:noreply, socket}
+  end
+
   defp page_title(:show), do: "Show Product"
   defp page_title(:edit), do: "Edit Product"
 end
