@@ -10,7 +10,7 @@ defmodule LiveStore.Store.Cart do
   @timestamps_opts type: :utc_datetime_usec
 
   schema "carts" do
-    has_many :cart_items, CartItem, preload_order: [desc: :priority]
+    has_many :items, CartItem
 
     belongs_to :user, User
 

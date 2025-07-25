@@ -6,7 +6,10 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
 
   def product_card(assigns) do
     ~H"""
-    <div class="border rounded-lg overflow-hidden shadow hover:shadow-lg transition p-4 my-4 w-full max-w-none sm:max-w-xs">
+    <.link
+      navigate={~p"/products/#{@product}"}
+      class="border rounded-lg overflow-hidden shadow hover:shadow-lg transition p-4 my-4 w-full max-w-none sm:max-w-xs"
+    >
       <div class="flex flex-row sm:flex-col gap-4 items-center sm:items-stretch">
         <div class="w-24 h-24 sm:w-full sm:h-full sm:aspect-square bg-gray-100 flex flex-shrink-0 items-center justify-center overflow-hidden">
           <img src={image_path(@product)} class="object-cover w-full h-full" />
@@ -29,7 +32,7 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
           </div>
         </div>
       </div>
-    </div>
+    </.link>
     """
   end
 

@@ -40,7 +40,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 value={attr_type}
               />
               <.button
-                class="btn btn-sm btn-outline"
+                class="btn btn-sm mt-8 btn-outline"
                 type="button"
                 phx-target={@myself}
                 phx-click="remove_attribute_type"
@@ -68,16 +68,24 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
           <.live_file_input upload={@uploads.new_images} class="custom-file-input" />
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
             <div :for={image <- @all_images} class="image-row flex flex-col items-center gap-2">
-              <img
-                :if={image.id}
-                src={~p"/uploads/#{image.path}"}
-                class="aspect-square object-cover w-32 rounded-lg"
-              />
-              <.live_img_preview
-                :if={image.ref}
-                entry={Enum.find(@uploads.new_images.entries, &(&1.ref == image.ref))}
-                class="aspect-square object-cover w-32 rounded-lg"
-              />
+              <div :if={image.id} class="relative">
+                <img src={~p"/uploads/#{image.path}"} class="aspect-square object-cover rounded-lg" />
+                <.icon
+                  name="hero-check-circle-solid"
+                  class="absolute top-1 right-1 size-8 opacity-85 text-green-500"
+                />
+              </div>
+
+              <div :if={image.ref} class="relative">
+                <.live_img_preview
+                  entry={Enum.find(@uploads.new_images.entries, &(&1.ref == image.ref))}
+                  class="aspect-square object-cover rounded-lg"
+                />
+                <.icon
+                  name="hero-ellipsis-horizontal-circle-solid"
+                  class="absolute top-1 right-1 size-8 opacity-75 text-gray-100"
+                />
+              </div>
 
               <div class="flex gap-2">
                 <.button

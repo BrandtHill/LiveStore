@@ -5,6 +5,7 @@ defmodule LiveStoreWeb.UserAuth do
   import Phoenix.Controller
 
   alias LiveStore.Accounts
+  alias LiveStore.Store
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -12,6 +13,9 @@ defmodule LiveStoreWeb.UserAuth do
   @max_age 60 * 60 * 24 * 60
   @remember_me_cookie "_live_store_web_user_remember_me"
   @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
+
+  @cart_cookie "_cart_id"
+  @cart_options [max_age: @max_age, same_site: "Lax"]
 
   @doc """
   Logs the user in.
@@ -93,7 +97,12 @@ defmodule LiveStoreWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Accounts.get_user_by_session_token(user_token)
-    assign(conn, :current_user, user)
+    {conn, cart} = ensure_cart(conn, user)
+
+    conn
+    |> assign(:current_user, user)
+    |> assign(:cart, cart)
+    |> put_session(:cart_id, cart.id)
   end
 
   defp ensure_user_token(conn) do
@@ -108,6 +117,21 @@ defmodule LiveStoreWeb.UserAuth do
         {nil, conn}
       end
     end
+  end
+
+  defp ensure_cart(conn, nil) do
+    cart =
+      if cart_id = conn.cookies[@cart_cookie] do
+        Store.get_cart(cart_id)
+      else
+        Store.fetch_user_cart()
+      end
+
+    {put_resp_cookie(conn, @cart_cookie, cart.id, @cart_options), cart}
+  end
+
+  defp ensure_cart(conn, user) do
+    {conn, Store.fetch_user_cart(user)}
   end
 
   @doc """
@@ -200,9 +224,15 @@ defmodule LiveStoreWeb.UserAuth do
   end
 
   defp mount_current_user(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
+    socket
+    |> Phoenix.Component.assign_new(:current_user, fn ->
       if user_token = session["user_token"] do
         Accounts.get_user_by_session_token(user_token)
+      end
+    end)
+    |> Phoenix.Component.assign_new(:cart, fn ->
+      if cart_id = session["cart_id"] do
+        Store.get_cart(cart_id)
       end
     end)
   end

@@ -11,14 +11,15 @@
         <.icon name="hero-bars-3" class="w-6 h-6 text-zinc-700" />
       </label>
 
-      <div class="absolute top-20 right-0 w-full 
-        bg-white flex-col items-end px-4 gap-3 pb-4 
-        hidden peer-checked:flex 
-        md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0">
+      <div class="absolute top-20 right-0 w-max
+        bg-white flex-col items-start px-4 gap-3 pb-4 
+        hidden peer-checked:flex mr-1
+        rounded-lg shadow-xl ring-1 ring-zinc-200
+        md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0 md:ring-0 md:shadow-none">
         <.link
           :if={@current_user && @current_user.admin}
           href={~p"/admin/products"}
-          class="px-3 py-2 rounded hover:bg-gray-200"
+          class="px-3 py-2 rounded hover:bg-gray-200 w-full md:w-max"
         >
           <.icon name="hero-wrench" /> Products
         </.link>
@@ -26,7 +27,7 @@
         <.link
           :if={@current_user}
           href={~p"/users/settings"}
-          class="px-3 py-2 rounded hover:bg-gray-200"
+          class="px-3 py-2 rounded hover:bg-gray-200 w-full md:w-max"
         >
           <.icon name="hero-user" /> Account
         </.link>
@@ -34,13 +35,26 @@
         <.link
           :if={is_nil(@current_user)}
           href={~p"/users/log_in"}
-          class="px-3 py-2 rounded hover:bg-gray-200"
+          class="px-3 py-2 rounded hover:bg-gray-200 w-full md:w-max"
         >
           <.icon name="hero-user" /> Login
         </.link>
 
-        <.link href="/cart" class="px-3 py-2 rounded hover:bg-gray-200 flex items-center gap-1">
-          <.icon name="hero-shopping-cart" /> Cart
+        <.link
+          href="/cart"
+          class="px-3 py-2 rounded hover:bg-gray-200 flex items-center gap-1 w-full md:w-max"
+        >
+          <div class="relative">
+            <.icon name="hero-shopping-cart" />
+
+            <span
+              :if={length(@cart.items) > 0}
+              class="absolute -top-1 -right-0.5 items-center px-1 py-0.5 text-xs font-bold leading-none bg-red-400 rounded-full"
+            >
+              {Enum.sum_by(@cart.items, & &1.quantity)}
+            </span>
+          </div>
+          Cart
         </.link>
       </div>
     </div>

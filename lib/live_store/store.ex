@@ -4,8 +4,11 @@ defmodule LiveStore.Store do
   """
 
   import Ecto.Query, warn: false
-  alias LiveStore.Repo
 
+  alias LiveStore.Accounts.User
+  alias LiveStore.Repo
+  alias LiveStore.Store.Cart
+  alias LiveStore.Store.CartItem
   alias LiveStore.Store.Image
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
@@ -23,18 +26,6 @@ defmodule LiveStore.Store do
     |> Repo.get!(id)
     |> Repo.preload([:variants, :images])
   end
-
-  # def create_product(params \\ %{}) do
-  #   %Product{}
-  #   |> Product.changeset(params)
-  #   |> Repo.insert()
-  # end
-
-  # def update_product(%Product{} = product, params) do
-  #   product
-  #   |> Product.changeset(params)
-  #   |> Repo.update()
-  # end
 
   def upsert_product(product \\ %Product{}, params) do
     product
@@ -68,19 +59,6 @@ defmodule LiveStore.Store do
     %Variant{} = Ecto.build_assoc(product, :variants)
   end
 
-  # def create_variant(%Product{} = product, params) do
-  #   product
-  #   |> build_variant()
-  #   |> Variant.changeset(params)
-  #   |> Repo.insert()
-  # end
-
-  # def update_variant(%Variant{} = variant, params) do
-  #   variant
-  #   |> Variant.changeset(params)
-  #   |> Repo.update()
-  # end
-
   def upsert_variant(%Variant{} = variant, params) do
     variant
     |> Variant.changeset(params)
@@ -90,6 +68,8 @@ defmodule LiveStore.Store do
   def change_variant(%Variant{} = variant, params \\ %{}) do
     Variant.changeset(variant, params)
   end
+
+  ## Images
 
   def insert_image(path) do
     Repo.insert(Image.changeset(%{path: path}))
@@ -119,5 +99,49 @@ defmodule LiveStore.Store do
     image
     |> Image.changeset(%{})
     |> Repo.delete()
+  end
+
+  ## Carts
+
+  def fetch_user_cart(user \\ nil)
+  def fetch_user_cart(%User{id: user_id}), do: fetch_user_cart(user_id)
+
+  def fetch_user_cart(user_id) do
+    %{user_id: user_id}
+    |> Cart.changeset()
+    |> Repo.insert!(
+      returning: true,
+      conflict_target: [:user_id],
+      on_conflict: {:replace, [:updated_at]}
+    )
+    |> Repo.preload([:items])
+  end
+
+  def get_cart(id) do
+    Cart
+    |> Repo.get(id)
+    |> Repo.preload([:items])
+  end
+
+  def preload_cart(%Cart{} = cart) do
+    Repo.preload(cart, items: [variant: [product: :images]])
+  end
+
+  def add_to_cart(%Cart{id: c_id, items: items}, %Variant{id: v_id}) do
+    item = Enum.find(items, %CartItem{quantity: 0}, &(&1.variant_id == v_id))
+
+    item
+    |> CartItem.changeset(%{cart_id: c_id, variant_id: v_id, quantity: item.quantity + 1})
+    |> Repo.insert_or_update()
+  end
+
+  def edit_cart_item(%CartItem{} = item, quantity) do
+    item
+    |> CartItem.changeset(%{quantity: quantity})
+    |> Repo.update()
+  end
+
+  def delete_cart_item(%CartItem{} = item) do
+    Repo.delete(item)
   end
 end

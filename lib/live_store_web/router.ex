@@ -24,6 +24,8 @@ defmodule LiveStoreWeb.Router do
 
     live_session :shop, on_mount: [{LiveStoreWeb.UserAuth, :mount_current_user}] do
       live "/products", ShopLive.Index, :index
+      live "/products/:id", ShopLive.ProductPage
+      live "/cart", ShopLive.Cart
     end
 
     scope "/admin", Admin do
