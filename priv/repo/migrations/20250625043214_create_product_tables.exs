@@ -8,6 +8,7 @@ defmodule LiveStore.Repo.Migrations.CreateProducts do
 
     create table(:products) do
       add :name, :citext, null: false
+      add :slug, :citext, null: false
       add :description, :text
       add :price, :integer, null: false, default: 0
       add :attribute_types, {:array, :string}, default: []
@@ -16,7 +17,7 @@ defmodule LiveStore.Repo.Migrations.CreateProducts do
     end
 
     create index(:products, [:attribute_types], using: "GIN")
-    create unique_index(:products, [:name])
+    create unique_index(:products, [:slug])
 
     # Images
 

@@ -3,6 +3,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
 
   alias LiveStore.Store
   alias LiveStore.Store.Image
+  alias LiveStore.Store.Product
 
   @impl true
   def render(assigns) do
@@ -21,6 +22,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:name]} type="text" label="Name" />
+        <.input field={@form[:slug]} type="text" label="URL Slug" />
         <.input
           field={@form[:description]}
           type="textarea"
@@ -150,7 +152,14 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"product" => product_params}, socket) do
+  def handle_event("validate", %{"product" => product_params} = params, socket) do
+    product_params =
+      if ["product", "name"] == params["_target"] do
+        Map.put(product_params, "slug", Product.slug_from_name(product_params["name"]))
+      else
+        product_params
+      end
+
     changeset = Store.change_product(socket.assigns.product, product_params)
 
     {:noreply,

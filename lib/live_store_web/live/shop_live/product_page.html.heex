@@ -12,12 +12,18 @@
     <div class="prose prose-sm max-w-none">
       {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
     </div>
-    <p class="text-zinc-700 text-lg pt-4">{money(price(@product, @selected_variant))}</p>
+
     <div>
-      <%= if in_stock?(@product, @selected_variant) do %>
-        <span class="text-sm text-green-600 font-medium">✔ In Stock</span>
-      <% else %>
-        <span class="text-sm text-red-500 font-medium">✖ Out of Stock</span>
+      <span class="text-zinc-700 text-lg pt-4 pr-2">
+        {money(price(@product, @selected_variant))}
+      </span>
+      <%= case {@selected_variant, in_stock?(@product, @selected_variant)} do %>
+        <% {nil, _} -> %>
+          <span></span>
+        <% {_, true} -> %>
+          <span class="text-sm text-green-600 font-medium">✔ In Stock</span>
+        <% {_, false} -> %>
+          <span class="text-sm text-red-500 font-medium">✖ Out of Stock</span>
       <% end %>
     </div>
 
@@ -42,6 +48,7 @@
           </select>
         </div>
       </form>
+
       <span :if={@selected_variant} class="text-zinc-600 font-medium">
         SKU: {@selected_variant.sku}
       </span>

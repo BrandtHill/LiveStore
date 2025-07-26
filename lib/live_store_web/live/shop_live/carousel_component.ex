@@ -17,7 +17,8 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
     <div class="relative w-full max-w-xl mx-auto">
       <div class="aspect-square overflow-hidden rounded-lg border shadow">
         <img
-          src={~p"/uploads/#{Enum.at(@images, @index).path}"}
+          :if={image = Enum.at(@images, @index)}
+          src={~p"/uploads/#{image.path}"}
           class="object-cover w-full h-full transition duration-300 ease-in-out"
         />
       </div>
@@ -25,17 +26,17 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
       <.button
         phx-click="prev"
         phx-target={@myself}
-        class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/60 hover:bg-white flex shadow"
+        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex shadow opacity-80"
       >
-        <.icon name="hero-chevron-left" class="justify-center w-5 h-5 text-zinc-800" />
+        <.icon name="hero-chevron-left" class="w-5 h-5 text-white-800" />
       </.button>
 
       <.button
         phx-click="next"
         phx-target={@myself}
-        class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/60 hover:bg-white flex shadow"
+        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex shadow opacity-80"
       >
-        <.icon name="hero-chevron-right" class="w-5 h-5 text-zinc-800" />
+        <.icon name="hero-chevron-right" class="w-5 h-5 text-white-800" />
       </.button>
 
       <div class="flex justify-center mt-3 gap-2">

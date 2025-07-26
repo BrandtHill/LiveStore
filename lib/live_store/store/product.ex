@@ -11,6 +11,7 @@ defmodule LiveStore.Store.Product do
 
   schema "products" do
     field :name, :string
+    field :slug, :string
     field :description, :string
     field :price, :integer
     field :attribute_types, {:array, :string}, default: []
@@ -21,7 +22,7 @@ defmodule LiveStore.Store.Product do
     timestamps()
   end
 
-  @required_fields [:name, :price]
+  @required_fields [:name, :slug, :price]
 
   @allowed_fields @required_fields ++ [:description, :attribute_types]
 
@@ -35,8 +36,18 @@ defmodule LiveStore.Store.Product do
     |> validate_length(:name, max: 255)
     |> validate_unique_list(:attribute_types)
     |> validate_number(:price, greater_than_or_equal_to: 0)
-    |> unsafe_validate_unique(:name, LiveStore.Repo)
-    |> unique_constraint(:name)
+    |> validate_format(:slug, ~r/^[a-z0-9-]*$/)
+    |> unsafe_validate_unique(:slug, LiveStore.Repo)
+    |> unique_constraint(:slug)
+  end
+
+  def slug_from_name(name) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/\s+/, "-")
+    |> String.replace(~r/[^a-z0-9-]/, "")
+    |> String.replace(~r/-+/, "-")
+    |> String.trim("-")
   end
 
   defp trim_strings(changeset, key) do

@@ -7,7 +7,7 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
   def product_card(assigns) do
     ~H"""
     <.link
-      navigate={~p"/products/#{@product}"}
+      navigate={~p"/products/#{@product.slug}"}
       class="border rounded-lg overflow-hidden shadow hover:shadow-lg transition p-4 my-4 w-full max-w-none sm:max-w-xs"
     >
       <div class="flex flex-row sm:flex-col gap-4 items-center sm:items-stretch">

@@ -29,7 +29,10 @@
           <div class="text-sm font-medium text-gray-800">
             {money((item.variant.price_override || item.variant.product.price) * item.quantity)}
           </div>
-          <div class={["text-xs font-thin text-gray-600", if(item.quantity > 1, do: "visible", else: "invisible")]}>
+          <div class={[
+            "text-xs font-thin text-gray-600",
+            if(item.quantity > 1, do: "visible", else: "invisible")
+          ]}>
             ({money(item.variant.price_override || item.variant.product.price)} each)
           </div>
           <div class="flex items-center gap-1 w-full">

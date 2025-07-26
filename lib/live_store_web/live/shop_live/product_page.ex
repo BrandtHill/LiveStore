@@ -2,14 +2,13 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
-  alias LiveStore.Store.CartItem
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
 
   @impl true
-  def mount(%{"id" => id} = _params, _session, socket) do
-    product = Store.get_product!(id)
+  def mount(%{"slug" => slug} = _params, _session, socket) do
+    product = Store.get_product_by_slug!(slug)
 
     selected_attributes = Map.new(product.attribute_types, fn type -> {type, nil} end)
 
@@ -26,10 +25,23 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   end
 
   @impl true
-  def handle_params(params, url, socket) do
-    IO.inspect(params, label: "Params")
-    IO.inspect(url, label: "URL")
-    IO.inspect(socket.host_uri, label: "Socket URI")
+  def handle_params(%{"variant" => sku}, _url, socket) do
+    if selected_variant = Enum.find(socket.assigns.product.variants, &(&1.sku == sku)) do
+      selected_attributes = Map.new(selected_variant.attributes, &{&1.type, &1.value})
+      attribute_map = create_attribute_map(socket.assigns.product.variants, selected_attributes)
+
+      {:noreply,
+       assign(socket,
+         selected_variant: selected_variant,
+         selected_attributes: selected_attributes,
+         attribute_map: attribute_map
+       )}
+    else
+      {:noreply, assign(socket, selected_variant: nil)}
+    end
+  end
+
+  def handle_params(_params, _url, socket) do
     {:noreply, socket}
   end
 
@@ -47,11 +59,14 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
         _ -> nil
       end
 
+    query = if selected_variant, do: %{variant: selected_variant.sku}, else: %{}
+
     socket =
       socket
       |> assign(:attribute_map, attribute_map)
       |> assign(:selected_attributes, selected_attributes)
       |> assign(:selected_variant, selected_variant)
+      |> push_patch(to: ~p"/products/#{socket.assigns.product.slug}?#{query}")
 
     {:noreply, socket}
   end

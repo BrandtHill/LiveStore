@@ -27,6 +27,12 @@ defmodule LiveStore.Store do
     |> Repo.preload([:variants, :images])
   end
 
+  def get_product_by_slug!(slug) do
+    Product
+    |> Repo.get_by!(slug: slug)
+    |> Repo.preload([:variants, :images])
+  end
+
   def upsert_product(product \\ %Product{}, params) do
     product
     |> Product.changeset(params)
