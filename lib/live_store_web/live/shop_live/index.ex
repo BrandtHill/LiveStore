@@ -2,9 +2,6 @@ defmodule LiveStoreWeb.ShopLive.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
-  # alias LiveStore.Store.Image
-  # alias LiveStore.Store.Product
-  # alias LiveStore.Store.Variant
 
   import LiveStoreWeb.ShopLive.ProductCardComponent
 

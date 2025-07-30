@@ -74,9 +74,9 @@ defmodule LiveStore.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def register_user(attrs) do
+  def register_user(attrs, require_password? \\ true) do
     %User{}
-    |> User.registration_changeset(attrs)
+    |> User.registration_changeset(attrs, require_password: require_password?)
     |> Repo.insert()
   end
 

@@ -20,6 +20,11 @@ if System.get_env("PHX_SERVER") do
   config :live_store, LiveStoreWeb.Endpoint, server: true
 end
 
+config :stripity_stripe, api_key: System.get_env("STRIPE_SECRET")
+
+config :live_store, :stripe_public_key, System.get_env("STRIPE_PUBLIC")
+config :live_store, :stripe_webhook_secret, System.get_env("STRIPE_WEBHOOK_SECRET")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

@@ -39,6 +39,10 @@ defmodule LiveStore.Accounts.User do
       using this changeset for validations on a LiveView form before
       submitting the form), this option can be set to `false`.
       Defaults to `true`.
+
+    * `:require_password` - Requires the the password is present in the changeset.
+      Set to `false` if registering an account with only an email.
+      Defaults to `true`.
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
@@ -57,8 +61,10 @@ defmodule LiveStore.Accounts.User do
   end
 
   defp validate_password(changeset, opts) do
+    required_fields = if Keyword.get(opts, :require_password, true), do: [:password], else: []
+
     changeset
-    |> validate_required([:password])
+    |> validate_required(required_fields)
     |> validate_length(:password, min: 10, max: 72)
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")

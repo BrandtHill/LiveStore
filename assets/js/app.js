@@ -33,6 +33,27 @@ Hooks.ResizeableTextarea = {
   }
 }
 
+Hooks.StripeCheckout = {
+  async mounted() {
+    const pubKey = this.el.dataset.stripePublicKey
+    const clientSecret = this.el.dataset.stripeClientSecret
+    const stripe = await window.Stripe(pubKey)
+
+    const fetchClientSecret = () => { return clientSecret; }
+
+    this.checkout = await stripe.initEmbeddedCheckout({fetchClientSecret})
+
+    this.checkout.mount("#stripe-checkout-element")
+  },
+
+  destroyed() {
+    if (this.checkout) {
+      this.checkout.destroy()
+      this.checkout = null
+    }
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
   hooks: Hooks,

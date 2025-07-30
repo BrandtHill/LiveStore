@@ -4,19 +4,31 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   alias LiveStore.Store
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
+  alias LiveStore.Stripe
+
+  @flat_rate_shipping 500
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    cart = Store.preload_cart(socket.assigns.cart)
+
+    {:ok,
+     socket
+     |> assign(:cart, cart)
+     |> assign(:sub_total, Store.calculate_total(cart))
+     |> assign(:shipping, @flat_rate_shipping)
+     |> assign(:stripe_public_key, Application.get_env(:live_store, :stripe_public_key))
+     |> assign(:client_secret, nil)}
   end
 
   @impl true
   def handle_params(_params, _uri, socket) do
-    cart = Store.preload_cart(socket.assigns.cart)
-
-    sub_total = calculate_sub_total(cart.items)
-
-    {:noreply, assign(socket, cart: cart, sub_total: sub_total)}
+    if socket.assigns.live_action == :checkout do
+      {:ok, %{client_secret: client_secret}} = Stripe.create_checkout_session(socket.assigns.cart)
+      {:noreply, assign(socket, :client_secret, client_secret)}
+    else
+      {:noreply, assign(socket, :client_secret, nil)}
+    end
   end
 
   @impl true
@@ -43,14 +55,8 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   end
 
   defp update_items(socket, items) do
-    {:noreply,
-     assign(socket,
-       cart: %Cart{socket.assigns.cart | items: items},
-       sub_total: calculate_sub_total(items)
-     )}
-  end
+    cart = %Cart{socket.assigns.cart | items: items}
 
-  defp calculate_sub_total(items) do
-    Enum.sum_by(items, &((&1.variant.price_override || &1.variant.product.price) * &1.quantity))
+    {:noreply, assign(socket, cart: cart, sub_total: Store.calculate_total(cart))}
   end
 end

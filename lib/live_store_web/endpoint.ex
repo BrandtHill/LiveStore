@@ -41,6 +41,11 @@ defmodule LiveStoreWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
+  plug Stripe.WebhookPlug,
+    at: "/webhooks/stripe",
+    handler: LiveStoreWeb.StripeHandler,
+    secret: {Application, :get_env, [:live_store, :stripe_webhook_secret]}
+
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],

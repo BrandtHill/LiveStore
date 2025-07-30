@@ -5,13 +5,17 @@ defmodule LiveStore.Store do
 
   import Ecto.Query, warn: false
 
+  alias LiveStore.Accounts
   alias LiveStore.Accounts.User
   alias LiveStore.Repo
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
   alias LiveStore.Store.Image
+  alias LiveStore.Store.Order
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
+
+  alias Stripe.Checkout.Session
 
   ## Products
 
@@ -130,7 +134,7 @@ defmodule LiveStore.Store do
   end
 
   def preload_cart(%Cart{} = cart) do
-    Repo.preload(cart, items: [variant: [product: :images]])
+    Repo.preload(cart, [:user, items: [variant: [product: :images]]])
   end
 
   def add_to_cart(%Cart{id: c_id, items: items}, %Variant{id: v_id}) do
@@ -149,5 +153,32 @@ defmodule LiveStore.Store do
 
   def delete_cart_item(%CartItem{} = item) do
     Repo.delete(item)
+  end
+
+  def calculate_total(%Cart{items: items} = _cart) do
+    Enum.sum_by(items, &((&1.variant.price_override || &1.variant.product.price) * &1.quantity))
+  end
+
+  ## Orders
+
+  def create_order(%Session{} = session) do
+    {:ok, %User{} = user} =
+      case Accounts.get_user_by_email(session.customer_details.email) do
+        %User{} = user -> {:ok, user}
+        nil -> Accounts.register_user(%{email: session.customer_details.email}, false)
+      end
+
+    %{
+      stripe_id: session.id,
+      user_id: user.id,
+      total: session.amount_total,
+      shipping_details: session.customer_details
+    }
+    |> Order.changeset()
+    |> Repo.insert()
+  end
+
+  def get_order_by_stripe_id(stripe_id) do
+    Repo.get_by(Order, stripe_id: stripe_id)
   end
 end

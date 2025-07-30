@@ -55,19 +55,36 @@
       </div>
     </div>
 
-    <div class="p-6 bg-white rounded shadow-md h-fit">
+    <div class="border p-6 bg-white rounded shadow-md h-fit">
       <h2 class="text-lg font-semibold text-gray-800 mb-4">Order Summary</h2>
       <div class="flex justify-between text-sm mb-2">
         <span>Subtotal</span>
         <span>{money(@sub_total)}</span>
       </div>
+      <div class="flex justify-between text-sm mb-2">
+        <span>Shipping</span>
+        <span>{money(@shipping)}</span>
+      </div>
+      <div class="flex justify-between text-xs my-4 text-gray-700">
+        <span>Tax determined at checkout</span>
+      </div>
       <div class="border-t mt-4 pt-4 flex justify-between font-semibold text-base">
         <span>Total</span>
-        <span>{money(@sub_total)}</span>
+        <span>{money(@sub_total + @shipping)}</span>
       </div>
-      <div class="mt-6">
+      <.link patch={~p"/cart/checkout"} class="mt-6">
         <.button class="w-full">Checkout</.button>
-      </div>
+      </.link>
     </div>
   </div>
 </div>
+
+<.modal :if={@live_action == :checkout} id="checkout-modal" show on_cancel={JS.patch(~p"/cart")}>
+  <div
+    id="stripe-checkout-element"
+    phx-hook="StripeCheckout"
+    data-stripe-public-key={@stripe_public_key}
+    data-stripe-client-secret={@client_secret}
+  >
+  </div>
+</.modal>
