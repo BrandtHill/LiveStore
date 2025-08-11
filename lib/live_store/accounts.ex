@@ -157,6 +157,12 @@ defmodule LiveStore.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, [context]))
   end
 
+  def update_stripe_id(%User{} = user, stripe_customer_id) do
+    user
+    |> User.stripe_changeset(stripe_customer_id)
+    |> Repo.update()
+  end
+
   @doc ~S"""
   Delivers the update email instructions to the given user.
 

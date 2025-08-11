@@ -9,6 +9,7 @@ defmodule LiveStore.Repo.Migrations.CreateUsersAuthTables do
       add :hashed_password, :string, null: false
       add :confirmed_at, :utc_datetime_usec
       add :admin, :boolean, default: false
+      add :stripe_id, :string
 
       timestamps()
     end

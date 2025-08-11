@@ -1,4 +1,5 @@
 defmodule LiveStore.Stripe do
+  alias LiveStore.Accounts.User
   alias LiveStore.Store
   alias LiveStore.Store.Cart
   alias Stripe.PaymentIntent
@@ -29,7 +30,17 @@ defmodule LiveStore.Stripe do
         }
       end)
 
-    email_params = if cart.user, do: %{customer_email: cart.user.email}, else: %{}
+    customer_params =
+      case cart.user do
+        nil ->
+          %{customer_creation: :always}
+
+        %User{stripe_id: nil, email: email} ->
+          %{customer_email: email, customer_creation: :always}
+
+        %User{stripe_id: stripe_id} ->
+          %{customer: stripe_id}
+      end
 
     %{
       ui_mode: :embedded,
@@ -70,7 +81,7 @@ defmodule LiveStore.Stripe do
       ],
       metadata: %{"cart_id" => cart.id}
     }
-    |> Map.merge(email_params)
+    |> Map.merge(customer_params)
     |> Session.create()
   end
 end

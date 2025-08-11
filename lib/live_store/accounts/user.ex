@@ -13,6 +13,7 @@ defmodule LiveStore.Accounts.User do
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime_usec
     field :admin, :boolean, default: false
+    field :stripe_id, :string
 
     timestamps()
   end
@@ -46,7 +47,7 @@ defmodule LiveStore.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:email, :password, :stripe_id])
     |> validate_email(opts)
     |> validate_password(opts)
   end
@@ -172,5 +173,9 @@ defmodule LiveStore.Accounts.User do
 
   def admin_changeset(%__MODULE__{} = user, is_admin? \\ true) do
     change(user, admin: is_admin?)
+  end
+
+  def stripe_changeset(%__MODULE__{} = user, stripe_customer_id) do
+    change(user, stripe_id: stripe_customer_id)
   end
 end

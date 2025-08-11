@@ -164,8 +164,17 @@ defmodule LiveStore.Store do
   def create_order(%Session{} = session) do
     {:ok, %User{} = user} =
       case Accounts.get_user_by_email(session.customer_details.email) do
-        %User{} = user -> {:ok, user}
-        nil -> Accounts.register_user(%{email: session.customer_details.email}, false)
+        %User{stripe_id: nil} = user ->
+          Accounts.update_stripe_id(user, session.customer)
+
+        %User{} = user ->
+          {:ok, user}
+
+        nil ->
+          Accounts.register_user(
+            %{email: session.customer_details.email, stripe_id: session.customer},
+            false
+          )
       end
 
     %{

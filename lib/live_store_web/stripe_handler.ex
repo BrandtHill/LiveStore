@@ -11,7 +11,11 @@ defmodule LiveStoreWeb.StripeHandler do
   def handle_event(%Event{type: "checkout.session.completed"} = event) do
     Store.create_order(event.data.object)
 
-    Phoenix.PubSub.broadcast(LiveStore.PubSub, "orders:#{event.data.object.id}", {:order_created, event.data.object.id})
+    Phoenix.PubSub.broadcast(
+      LiveStore.PubSub,
+      "orders:#{event.data.object.id}",
+      {:order_created, event.data.object.id}
+    )
 
     :ok
   end
