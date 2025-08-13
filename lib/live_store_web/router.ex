@@ -11,6 +11,7 @@ defmodule LiveStoreWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug :fetch_cart
   end
 
   pipeline :api do
@@ -31,7 +32,7 @@ defmodule LiveStoreWeb.Router do
     end
 
     scope "/admin", Admin do
-      live_session :product_admin, on_mount: [{LiveStoreWeb.UserAuth, :ensure_admin}] do
+      live_session :product_admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
         live "/products", ProductLive.Index, :index
         live "/products/new", ProductLive.Index, :new
         live "/products/:id/edit", ProductLive.Index, :edit
@@ -71,38 +72,25 @@ defmodule LiveStoreWeb.Router do
   ## Authentication routes
 
   scope "/", LiveStoreWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
-
-    live_session :redirect_if_user_is_authenticated,
-      on_mount: [{LiveStoreWeb.UserAuth, :redirect_if_user_is_authenticated}] do
-      live "/users/register", UserRegistrationLive, :new
-      live "/users/log_in", UserLoginLive, :new
-      live "/users/reset_password", UserForgotPasswordLive, :new
-      live "/users/reset_password/:token", UserResetPasswordLive, :edit
-    end
-
-    post "/users/log_in", UserSessionController, :create
-  end
-
-  scope "/", LiveStoreWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{LiveStoreWeb.UserAuth, :ensure_authenticated}] do
-      live "/users/settings", UserSettingsLive, :edit
-      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+      on_mount: [{LiveStoreWeb.UserAuth, :require_authenticated}] do
+      live "/account/settings", UserLive.Settings, :edit
+      live "/account/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
   end
 
   scope "/", LiveStoreWeb do
     pipe_through [:browser]
 
-    delete "/users/log_out", UserSessionController, :delete
-
     live_session :current_user,
       on_mount: [{LiveStoreWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/account/login", UserLive.Login, :new
+      live "/account/login/:token", UserLive.Confirmation, :new
     end
+
+    post "/account/login", UserSessionController, :create
+    delete "/account/logout", UserSessionController, :delete
   end
 end

@@ -6,7 +6,6 @@ defmodule LiveStore.Repo.Migrations.CreateUsersAuthTables do
 
     create table(:users) do
       add :email, :citext, null: false
-      add :hashed_password, :string, null: false
       add :confirmed_at, :utc_datetime_usec
       add :admin, :boolean, default: false
       add :stripe_id, :string
@@ -21,6 +20,7 @@ defmodule LiveStore.Repo.Migrations.CreateUsersAuthTables do
       add :token, :binary, null: false
       add :context, :string, null: false
       add :sent_to, :string
+      add :authenticated_at, :utc_datetime_usec
 
       timestamps(updated_at: false)
     end

@@ -9,6 +9,7 @@ defmodule LiveStore.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      listeners: [Phoenix.CodeReloader],
       deps: deps()
     ]
   end
@@ -33,7 +34,7 @@ defmodule LiveStore.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.21"},
+      {:phoenix, "~> 1.8.0"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
       {:earmark, "~> 1.4"},
@@ -45,17 +46,17 @@ defmodule LiveStore.MixProject do
       {:phoenix_live_view, "~> 1.0"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
-       tag: "v2.1.1",
+       tag: "v2.2.0",
        sparse: "optimized",
        app: false,
        compile: false,
        depth: 1},
-      {:swoosh, "~> 1.5"},
-      {:finch, "~> 0.13"},
+      {:swoosh, "~> 1.16"},
+      {:req, "~> 0.5"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.26"},

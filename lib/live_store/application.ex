@@ -12,8 +12,6 @@ defmodule LiveStore.Application do
       LiveStore.Repo,
       {DNSCluster, query: Application.get_env(:live_store, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: LiveStore.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: LiveStore.Finch},
       # Start a worker by calling: LiveStore.Worker.start_link(arg)
       # {LiveStore.Worker, arg},
       # Start to serve requests, typically the last entry

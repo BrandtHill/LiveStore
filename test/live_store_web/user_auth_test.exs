@@ -148,13 +148,13 @@ defmodule LiveStoreWeb.UserAuthTest do
     end
   end
 
-  describe "on_mount :ensure_authenticated" do
+  describe "on_mount :require_authenticated" do
     test "authenticates current_user based on a valid user_token", %{conn: conn, user: user} do
       user_token = Accounts.generate_user_session_token(user)
       session = conn |> put_session(:user_token, user_token) |> get_session()
 
       {:cont, updated_socket} =
-        UserAuth.on_mount(:ensure_authenticated, %{}, session, %LiveView.Socket{})
+        UserAuth.on_mount(:require_authenticated, %{}, session, %LiveView.Socket{})
 
       assert updated_socket.assigns.current_user.id == user.id
     end
@@ -168,7 +168,7 @@ defmodule LiveStoreWeb.UserAuthTest do
         assigns: %{__changed__: %{}, flash: %{}}
       }
 
-      {:halt, updated_socket} = UserAuth.on_mount(:ensure_authenticated, %{}, session, socket)
+      {:halt, updated_socket} = UserAuth.on_mount(:require_authenticated, %{}, session, socket)
       assert updated_socket.assigns.current_user == nil
     end
 
@@ -180,7 +180,7 @@ defmodule LiveStoreWeb.UserAuthTest do
         assigns: %{__changed__: %{}, flash: %{}}
       }
 
-      {:halt, updated_socket} = UserAuth.on_mount(:ensure_authenticated, %{}, session, socket)
+      {:halt, updated_socket} = UserAuth.on_mount(:require_authenticated, %{}, session, socket)
       assert updated_socket.assigns.current_user == nil
     end
   end
@@ -231,7 +231,7 @@ defmodule LiveStoreWeb.UserAuthTest do
       conn = conn |> fetch_flash() |> UserAuth.require_authenticated_user([])
       assert conn.halted
 
-      assert redirected_to(conn) == ~p"/users/log_in"
+      assert redirected_to(conn) == ~p"/account/login"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
                "You must log in to access this page."

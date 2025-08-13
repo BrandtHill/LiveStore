@@ -171,10 +171,10 @@ defmodule LiveStore.Store do
           {:ok, user}
 
         nil ->
-          Accounts.register_user(
-            %{email: session.customer_details.email, stripe_id: session.customer},
-            false
-          )
+          Accounts.register_user(%{
+            email: session.customer_details.email,
+            stripe_id: session.customer
+          })
       end
 
     %{
