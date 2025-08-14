@@ -2,7 +2,6 @@ defmodule LiveStoreWeb.Admin.ProductLive.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
-  alias LiveStore.Store.Product
 
   @impl true
   def render(assigns) do

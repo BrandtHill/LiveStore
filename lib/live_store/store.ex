@@ -77,6 +77,12 @@ defmodule LiveStore.Store do
     |> Repo.insert_or_update()
   end
 
+  def decrement_variant_stock(%Variant{stock: stock} = variant, quantity) do
+    variant
+    |> Variant.changeset(%{stock: max(0, stock - quantity)})
+    |> Repo.update()
+  end
+
   def change_variant(%Variant{} = variant, params \\ %{}) do
     Variant.changeset(variant, params)
   end
@@ -158,40 +164,59 @@ defmodule LiveStore.Store do
   end
 
   def calculate_total(%Cart{items: items} = _cart) do
-    Enum.sum_by(items, &((&1.variant.price_override || &1.variant.product.price) * &1.quantity))
+    Enum.sum_by(items, &calculate_item_price/1)
   end
+
+  defp calculate_item_price(%CartItem{variant: variant, quantity: quantity}),
+    do: (variant.price_override || variant.product.price) * quantity
 
   ## Orders
 
   def create_order(%Session{} = session) do
-    %Cart{} = _cart = get_cart(session.metadata["cart_id"])
+    Repo.transact(fn ->
+      %Cart{} = cart = get_cart(session.metadata["cart_id"])
+      cart = Repo.preload(cart, items: [variant: :product])
 
-    {:ok, %User{} = user} =
-      case Accounts.get_user_by_email(session.customer_details.email) do
-        %User{stripe_id: nil} = user ->
-          Accounts.update_stripe_id(user, session.customer)
+      {:ok, %User{} = user} =
+        case Accounts.get_user_by_email(session.customer_details.email) do
+          %User{stripe_id: nil} = user ->
+            Accounts.update_stripe_id(user, session.customer)
 
-        %User{} = user ->
-          {:ok, user}
+          %User{} = user ->
+            {:ok, user}
 
-        nil ->
-          Accounts.register_user(%{
-            email: session.customer_details.email,
-            stripe_id: session.customer
-          })
-      end
+          nil ->
+            Accounts.register_user(%{
+              email: session.customer_details.email,
+              stripe_id: session.customer
+            })
+        end
 
-    %{
-      stripe_id: session.id,
-      user_id: user.id,
-      total: session.amount_total,
-      shipping_details: session.customer_details
-    }
-    |> Order.changeset()
-    |> Repo.insert()
+      order_items =
+        Enum.map(cart.items, fn %CartItem{} = i ->
+          i |> Map.take([:variant_id, :quantity]) |> Map.put(:price, calculate_item_price(i))
+        end)
+
+      # This is an N+1 query, but not a concern for most carts.
+      Enum.each(cart.items, fn i -> decrement_variant_stock(i.variant, i.quantity) end)
+
+      Repo.delete_all(from(i in CartItem, where: i.cart_id == ^cart.id))
+
+      %{
+        stripe_id: session.id,
+        user_id: user.id,
+        total: session.amount_total,
+        shipping_details: session.customer_details,
+        items: order_items
+      }
+      |> Order.changeset()
+      |> Repo.insert()
+    end)
   end
 
   def get_order_by_stripe_id(stripe_id) do
-    Repo.get_by(Order, stripe_id: stripe_id)
+    Order
+    |> Repo.get_by(stripe_id: stripe_id)
+    |> Repo.preload([items: [variant: [product: :images]]])
   end
 end

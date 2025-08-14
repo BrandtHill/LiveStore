@@ -33,6 +33,7 @@ defmodule LiveStore.Store.Order do
   def changeset(order \\ %__MODULE__{}, params) do
     order
     |> cast(params, @required_fields)
+    |> cast_assoc(:items, required: true)
     |> validate_required(@required_fields)
     |> validate_number(:total, greater_than_or_equal_to: 0)
     |> foreign_key_constraint(:user_id)

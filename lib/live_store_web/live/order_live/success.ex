@@ -2,6 +2,25 @@ defmodule LiveStoreWeb.OrderLive.Success do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
+  alias LiveStoreWeb.OrderLive.OrderComponents
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <div class="max-w-4xl mx-auto p-6">
+      <.header>
+        🎉 Order Successful!
+        <:subtitle>Thank you for your purchase, your order is now being processed.</:subtitle>
+      </.header>
+
+      <OrderComponents.large_card :if={@order} order={@order} />
+
+      <div class="mt-8 text-center">
+        <.button navigate={~p"/"} variant="primary">Continue Shopping</.button>
+      </div>
+    </div>
+    """
+  end
 
   @impl true
   def mount(%{"checkout_session_id" => checkout_session_id}, _session, socket) do
@@ -19,20 +38,5 @@ defmodule LiveStoreWeb.OrderLive.Success do
     order = Store.get_order_by_stripe_id(checkout_session_id)
 
     {:noreply, assign(socket, order: order)}
-  end
-
-  @impl true
-  def render(assigns) do
-    ~H"""
-    <div>
-      <.header>Order Successful!!</.header>
-      <div :if={@order}>
-        <div>{@order.id}</div>
-        <div>{money(@order.total)}</div>
-        <div>{@order.stripe_id}</div>
-        <div>{@order.status}</div>
-      </div>
-    </div>
-    """
   end
 end

@@ -2,7 +2,6 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
   use Ecto.Migration
 
   def change do
-
     # Carts
 
     create table(:carts) do

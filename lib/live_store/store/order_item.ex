@@ -18,9 +18,9 @@ defmodule LiveStore.Store.OrderItem do
     timestamps()
   end
 
-  @required_fields [:order_id, :quantity, :price]
+  @required_fields [:quantity, :price]
 
-  @allowed_fields @required_fields ++ [:variant_id]
+  @allowed_fields @required_fields ++ [:order_id, :variant_id]
 
   @doc false
   def changeset(order_item \\ %__MODULE__{}, params) do

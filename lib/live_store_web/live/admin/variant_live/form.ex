@@ -41,18 +41,6 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
     """
   end
 
-  defp get_attr(variant, attr_type),
-    do: LiveStoreWeb.Admin.VariantLive.Index.get_attr(variant, attr_type)
-
-  defp get_attr_errors(%Ecto.Changeset{changes: %{attributes: [_ | _] = attributes}}, attr_type) do
-    Enum.find(attributes, &(&1.changes[:type] == attr_type)).errors
-  end
-
-  defp get_attr_errors(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}, attr_type),
-    do: get_attr_errors(changeset, attr_type)
-
-  defp get_attr_errors(_cs, _attr_type), do: []
-
   @impl true
   def mount(%{"id" => id} = params, _session, socket) do
     product = Store.get_product!(id)
@@ -92,7 +80,7 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
 
   defp save_product(socket, variant_params) do
     case Store.upsert_variant(socket.assigns.variant, variant_params) do
-      {:ok, variant} ->
+      {:ok, _variant} ->
         action_string = (socket.assigns.live_action == :new && "created") || "updated"
 
         {:noreply,
