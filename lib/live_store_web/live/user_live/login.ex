@@ -46,7 +46,8 @@ defmodule LiveStoreWeb.UserLive.Login do
           phx-mounted={JS.focus()}
         />
         <.button class="btn btn-primary w-full">
-          Log in with email <span aria-hidden="true">→</span>
+          Log in {if is_nil(@current_user), do: "or sign up "}with email
+          <span aria-hidden="true">→</span>
         </.button>
       </.form>
     </div>
@@ -64,6 +65,7 @@ defmodule LiveStoreWeb.UserLive.Login do
     {:ok, assign(socket, form: form)}
   end
 
+  @impl true
   def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
     {:ok, user} =
       case Accounts.get_user_by_email(email) do

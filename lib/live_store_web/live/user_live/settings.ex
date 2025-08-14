@@ -18,13 +18,13 @@ defmodule LiveStoreWeb.UserLive.Settings do
         <.link
           href={~p"/account/logout"}
           method="delete"
-          class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm bg-zinc-900 hover:bg-zinc-700"
+          class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm  hover:bg-base-300"
         >
           Log out
         </.link>
       </div>
 
-      <div class="divider"/>
+      <div class="divider" />
 
       <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
         <.input
@@ -83,7 +83,6 @@ defmodule LiveStoreWeb.UserLive.Settings do
   def handle_event("update_email", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.change_user_email(user, user_params) do
       %{valid?: true} = changeset ->

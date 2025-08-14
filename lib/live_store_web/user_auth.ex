@@ -296,7 +296,7 @@ defmodule LiveStoreWeb.UserAuth do
     socket
     |> Phoenix.Component.assign_new(:current_user, fn ->
       if user_token = session["user_token"] do
-        {user, token_inserted_at} = Accounts.get_user_by_session_token(user_token)
+        {user, _token_inserted_at} = Accounts.get_user_by_session_token(user_token)
         user
       end
     end)

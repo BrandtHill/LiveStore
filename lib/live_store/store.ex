@@ -8,6 +8,7 @@ defmodule LiveStore.Store do
   alias LiveStore.Accounts
   alias LiveStore.Accounts.User
   alias LiveStore.Repo
+  alias LiveStore.Store.Attribute
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
   alias LiveStore.Store.Image
@@ -66,7 +67,8 @@ defmodule LiveStore.Store do
   def get_variant(variant_id), do: Repo.get(Variant, variant_id)
 
   def build_variant(%Product{} = product) do
-    %Variant{} = Ecto.build_assoc(product, :variants)
+    attributes = Enum.map(product.attribute_types, fn type -> %Attribute{type: type} end)
+    %Variant{} = Ecto.build_assoc(product, :variants, attributes: attributes)
   end
 
   def upsert_variant(%Variant{} = variant, params) do
@@ -162,6 +164,8 @@ defmodule LiveStore.Store do
   ## Orders
 
   def create_order(%Session{} = session) do
+    %Cart{} = _cart = get_cart(session.metadata["cart_id"])
+
     {:ok, %User{} = user} =
       case Accounts.get_user_by_email(session.customer_details.email) do
         %User{stripe_id: nil} = user ->

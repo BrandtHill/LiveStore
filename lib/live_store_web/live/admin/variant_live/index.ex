@@ -7,48 +7,53 @@ defmodule LiveStoreWeb.Admin.VariantLive.Index do
   alias LiveStore.Store.Variant
 
   @impl true
+  def render(assigns) do
+    ~H"""
+    <.header>
+      Listing Variants for {@product.id}
+      <:actions>
+        <.link patch={~p"/admin/products/#{@product}/variants/new"}>
+          <.button>New Variant</.button>
+        </.link>
+      </:actions>
+    </.header>
+
+    <.table id="variants" rows={@streams.variants}>
+      <:col :let={{_id, variant}} label="SKU">{variant.sku}</:col>
+      <:col :let={{_id, variant}} label="Price Override">{money(variant.price_override)}</:col>
+      <:col :let={{_id, variant}} label="Stock">{variant.stock}</:col>
+      <:col :let={{_id, variant}} :for={attr_type <- @product.attribute_types} label={attr_type}>
+        {get_attr(variant, attr_type)}
+      </:col>
+
+      <:action :let={{_id, variant}}>
+        <.link patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
+      </:action>
+      <:action :let={{id, variant}}>
+        <.link
+          phx-click={JS.push("delete", value: %{id: variant.id}) |> hide("##{id}")}
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+
+    <.back navigate={~p"/admin/products/#{@product}"}>Back to product</.back>
+    """
+  end
+
+  @impl true
   def mount(%{"id" => product_id}, _session, socket) do
     %Product{variants: variants} = product = Store.get_product!(product_id)
 
     socket =
       socket
       |> assign(:product, product)
+      |> assign(:page_title, "Product Variants")
       |> stream(:variants, variants)
 
     {:ok, socket}
-  end
-
-  @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Variant")
-    |> assign(:variant, Store.build_variant(socket.assigns.product))
-  end
-
-  defp apply_action(socket, :edit, %{"variant_id" => id} = _params) do
-    socket
-    |> assign(:page_title, "Edit Variant")
-    |> assign(:variant, Store.get_variant(id))
-  end
-
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Product Variants")
-    |> assign(:variant, nil)
-  end
-
-  @impl true
-  def handle_info({LiveStoreWeb.Admin.VariantLive.FormComponent, {:saved, variant}}, socket) do
-    socket =
-      socket
-      |> stream_insert(:variants, variant)
-      |> assign(:product, Store.preload_variants(socket.assigns.product))
-
-    {:noreply, socket}
   end
 
   def get_attr(%Variant{attributes: attributes}, type) do

@@ -1,5 +1,5 @@
-defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
-  use LiveStoreWeb, :live_component
+defmodule LiveStoreWeb.Admin.ProductLive.Form do
+  use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
   alias LiveStore.Store.Image
@@ -8,17 +8,17 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="mx-auto max-w-3xl p-4">
       <.header>
-        {@title}
+        {@page_title}
         <:subtitle>Use this form to manage product records in your database.</:subtitle>
       </.header>
 
-      <.simple_form
+      <.form
         for={@form}
         id="product-form"
-        phx-target={@myself}
         phx-change="validate"
+        phx-debounce="0"
         phx-submit="save"
       >
         <.input field={@form[:name]} type="text" label="Name" />
@@ -29,7 +29,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
           label="Description"
           phx-hook="ResizeableTextarea"
         />
-        <.input field={@form[:price]} type="number" label="Price" />
+        <.input field={@form[:price]} type="number" label="Price" phx-debounce="0" />
         <i>{money(@form[:price].value)}</i>
 
         <div class="mt-4 space-y-4">
@@ -42,9 +42,8 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 value={attr_type}
               />
               <.button
-                class="btn btn-sm mt-8 btn-outline"
+                class="btn btn-sm h-8.5 btn-secondary mt-6.5"
                 type="button"
-                phx-target={@myself}
                 phx-click="remove_attribute_type"
                 value={attr_type}
               >
@@ -58,14 +57,13 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
           <.button
             class="btn btn-sm btn-secondary mt-2"
             type="button"
-            phx-target={@myself}
             phx-click="add_attribute_type"
           >
             + Add Attribute Type
           </.button>
         </div>
 
-        <div>
+        <div class="py-4">
           <.label>Add Product Images</.label>
           <.live_file_input upload={@uploads.new_images} class="custom-file-input" />
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
@@ -74,7 +72,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 <img src={~p"/uploads/#{image.path}"} class="aspect-square object-cover rounded-lg" />
                 <.icon
                   name="hero-check-circle-solid"
-                  class="absolute top-1 right-1 size-8 opacity-85 text-green-500"
+                  class="absolute top-1 right-1 size-8 opacity-85 text-success"
                 />
               </div>
 
@@ -93,8 +91,8 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 <.button
                   :if={image.priority < length(@all_images) - 1}
                   type="button"
+                  class="btn btn-secondary"
                   phx-click="move_img"
-                  phx-target={@myself}
                   phx-value-priority={image.priority}
                   phx-value-direction={1}
                 >
@@ -103,7 +101,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 <.button
                   :if={image.priority > 0}
                   type="button"
-                  phx-target={@myself}
+                  class="btn btn-secondary"
                   phx-click="move_img"
                   phx-value-priority={image.priority}
                   phx-value-direction={-1}
@@ -112,8 +110,8 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
                 </.button>
                 <.button
                   type="button"
+                  variant="primary"
                   phx-click={if image.id, do: "delete_img", else: "cancel_img"}
-                  phx-target={@myself}
                   phx-value-id={image.id}
                   phx-value-ref={image.ref}
                 >
@@ -124,16 +122,27 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
           </div>
         </div>
 
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Product</.button>
-        </:actions>
-      </.simple_form>
+        <footer class="mt-8">
+          <.button phx-disable-with="Saving..." variant="primary">Save Product</.button>
+          <.button navigate={@return_path}>Cancel</.button>
+        </footer>
+      </.form>
     </div>
     """
   end
 
   @impl true
-  def update(%{product: product} = assigns, socket) do
+  def mount(params, _session, socket) do
+    {product, page_title, return_path} =
+      case socket.assigns.live_action do
+        :new ->
+          {%Product{images: []}, "New product", ~p"/admin/products"}
+
+        :edit ->
+          id = params["id"]
+          {Store.get_product!(id), "Edit product", ~p"/admin/products/#{id}"}
+      end
+
     all_images =
       product.images
       |> Enum.map(fn i -> %{id: i.id, ref: nil, path: i.path} end)
@@ -141,14 +150,16 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
 
     {:ok,
      socket
-     |> assign(assigns)
+     |> assign(:product, product)
+     |> assign(:page_title, page_title)
+     |> assign(:return_path, return_path)
      |> assign(:attribute_types, product.attribute_types)
      |> assign(:all_images, all_images)
      |> assign(:deleted_image_ids, [])
      |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20)
      |> assign_new(:form, fn ->
        to_form(Store.change_product(product))
-     end)}
+     end), temporary_assigns: [form: nil]}
   end
 
   @impl true
@@ -246,16 +257,15 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
   defp save_product(socket, product_params) do
     case Store.upsert_product(socket.assigns.product, product_params) do
       {:ok, product} ->
-        notify_parent({:saved, product})
         _images = upsert_images(socket, product)
 
-        action_string = (socket.assigns.action == :new && "created") || "updated"
+        action_string = (socket.assigns.live_action == :new && "created") || "updated"
 
         {:noreply,
          socket
          |> assign(:all_images, [])
          |> put_flash(:info, "Product #{action_string} successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.return_path)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -292,6 +302,4 @@ defmodule LiveStoreWeb.Admin.ProductLive.FormComponent do
     {_, images} = Store.bulk_upsert_images(new_images ++ existing_images)
     images
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

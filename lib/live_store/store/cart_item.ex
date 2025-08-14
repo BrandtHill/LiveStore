@@ -26,8 +26,9 @@ defmodule LiveStore.Store.CartItem do
     cart_item
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
+    |> validate_number(:quantity, greater_than: 0)
     |> foreign_key_constraint(:cart_id)
     |> foreign_key_constraint(:variant_id)
-    |> validate_number(:quantity, greater_than: 0)
+    |> unique_constraint([:cart_id, :variant_id])
   end
 end

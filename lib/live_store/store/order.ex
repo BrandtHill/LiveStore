@@ -4,14 +4,17 @@ defmodule LiveStore.Store.Order do
   import Ecto.Changeset
 
   alias LiveStore.Accounts.User
+  alias LiveStore.Store.OrderItem
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec
 
   schema "orders" do
-    # has_many :items,
     belongs_to :user, User
+
+    has_many :items, OrderItem
+
     field :total, :integer
     field :stripe_id, :string
 

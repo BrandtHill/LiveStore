@@ -26,17 +26,17 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
       <.button
         phx-click="prev"
         phx-target={@myself}
-        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex shadow opacity-80"
+        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20"
       >
-        <.icon name="hero-chevron-left" class="w-5 h-5 text-white-800" />
+        <.icon name="hero-chevron-left" class="w-8 h-8 text-white-800" />
       </.button>
 
       <.button
         phx-click="next"
         phx-target={@myself}
-        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex shadow opacity-80"
+        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20"
       >
-        <.icon name="hero-chevron-right" class="w-5 h-5 text-white-800" />
+        <.icon name="hero-chevron-right" class="w-8 h-8 text-white-800" />
       </.button>
 
       <div class="flex justify-center mt-3 gap-2">
@@ -48,8 +48,8 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
           class={[
             "rounded-lg overflow-hidden focus:outline-none border-2 transition",
             if(index == @index,
-              do: "border-zinc-800 ring-2 ring-zinc-400",
-              else: "border-transparent hover:border-zinc-300"
+              do: "border-base-content/30 ring-2 ring-base-200",
+              else: "border-transparent hover:border-base-300"
             )
           ]}
         >

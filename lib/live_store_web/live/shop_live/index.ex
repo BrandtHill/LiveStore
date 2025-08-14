@@ -6,6 +6,19 @@ defmodule LiveStoreWeb.ShopLive.Index do
   import LiveStoreWeb.ShopLive.ProductCardComponent
 
   @impl true
+  def render(assigns) do
+    ~H"""
+    <.header>
+      Shop!
+    </.header>
+
+    <div class="my-8 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 justify-center px-8">
+      <.product_card :for={{_id, product} <- @streams.products} product={product} />
+    </div>
+    """
+  end
+
+  @impl true
   def mount(_params, _session, socket) do
     {:ok, stream(socket, :products, Store.list_products())}
   end

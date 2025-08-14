@@ -39,7 +39,7 @@ defmodule LiveStore.Stripe do
           %{customer_email: email, customer_creation: :always}
 
         %User{stripe_id: stripe_id} ->
-          %{customer: stripe_id}
+          %{customer: stripe_id, customer_update: %{shipping: :auto}}
       end
 
     %{

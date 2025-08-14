@@ -1,9 +1,9 @@
 defmodule LiveStoreWeb.StripeHandler do
-  alias LiveStore.Accounts
-  alias LiveStore.Accounts.User
+  # alias LiveStore.Accounts
+  # alias LiveStore.Accounts.User
   alias LiveStore.Store
   alias LiveStore.Store.Cart
-  alias Stripe.Checkout.Session
+  # alias Stripe.Checkout.Session
   alias Stripe.Event
 
   @behaviour Stripe.WebhookHandler

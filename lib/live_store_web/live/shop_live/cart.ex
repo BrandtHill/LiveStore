@@ -9,6 +9,104 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   @flat_rate_shipping 500
 
   @impl true
+  def render(assigns) do
+    ~H"""
+    <div class="max-w-4xl mx-auto py-8">
+      <.header>Your Cart</.header>
+
+      <p :if={@cart.items == []} class="text-base-600 text-center mt-6">Your cart is empty.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+        <div class="md:col-span-2 space-y-4">
+          <div
+            :for={item <- @cart.items}
+            class="flex gap-4 p-4 bg-base-100 rounded shadow-sm items-start border border-base-300"
+          >
+            <img
+              src={~p"/uploads/#{hd(item.variant.product.images).path}"}
+              class="w-24 h-24 object-cover rounded"
+            />
+
+            <div class="flex-grow space-y-1">
+              <div class="font-semibold">{item.variant.product.name}</div>
+              <span
+                :for={%{type: type, value: value} <- item.variant.attributes}
+                class="text-sm font-thin"
+              >
+                {type}: {value}{if List.last(item.variant.attributes).type != type, do: ","}
+              </span>
+              <div class="text-sm">SKU: {item.variant.sku}</div>
+            </div>
+
+            <div class="flex flex-col items-end justify-between h-full ml-4 max-w-[6rem]">
+              <div class="text-sm font-medium">
+                {money((item.variant.price_override || item.variant.product.price) * item.quantity)}
+              </div>
+              <div class={[
+                "text-xs font-thin",
+                if(item.quantity > 1, do: "visible", else: "invisible")
+              ]}>
+                ({money(item.variant.price_override || item.variant.product.price)} each)
+              </div>
+              <div class="flex items-center gap-1 w-full">
+                <form phx-change="quantity" class="mt-2">
+                  <input type="hidden" name="item[id]" value={item.id} />
+                  <.input
+                    type="number"
+                    name="item[quantity]"
+                    value={item.quantity}
+                    min="1"
+                    max={item.variant.stock}
+                    phx-debounce="500"
+                  />
+                </form>
+                <.button
+                  phx-click="remove"
+                  phx-value-id={item.id}
+                  class="btn text-xs px-2 py-1 inline-flex items-center h-8"
+                >
+                  ✕
+                </.button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border border-base-300 p-6 bg-base-100 rounded shadow-md h-fit">
+          <h2 class="text-lg font-semibold text-base-800 mb-4">Order Summary</h2>
+          <div class="flex justify-between text-sm mb-2">
+            <span>Subtotal</span>
+            <span>{money(@sub_total)}</span>
+          </div>
+          <div class="flex justify-between text-sm mb-2">
+            <span>Shipping</span>
+            <span>{money(@shipping)}</span>
+          </div>
+          <div class="flex justify-between text-xs my-4 text-base-700">
+            <span>Tax determined at checkout</span>
+          </div>
+          <div class="border-t border-base-300 mt-4 pt-4 flex justify-between font-semibold text-base">
+            <span>Total</span>
+            <span>{money(@sub_total + @shipping)}</span>
+          </div>
+          <.button patch={~p"/cart/checkout"} class="btn btn-primary w-full mt-6">Checkout</.button>
+        </div>
+      </div>
+    </div>
+
+    <.modal :if={@live_action == :checkout} id="checkout-modal" show on_cancel={JS.patch(~p"/cart")}>
+      <div
+        id="stripe-checkout-element"
+        phx-hook="StripeCheckout"
+        data-stripe-public-key={@stripe_public_key}
+        data-stripe-client-secret={@client_secret}
+      >
+      </div>
+    </.modal>
+    """
+  end
+
+  @impl true
   def mount(_params, _session, socket) do
     cart = Store.preload_cart(socket.assigns.cart)
 
