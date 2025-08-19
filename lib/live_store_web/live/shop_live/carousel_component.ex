@@ -26,7 +26,7 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
       <.button
         phx-click="prev"
         phx-target={@myself}
-        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20"
+        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
       >
         <.icon name="hero-chevron-left" class="w-8 h-8 text-white-800" />
       </.button>
@@ -34,7 +34,7 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
       <.button
         phx-click="next"
         phx-target={@myself}
-        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20"
+        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
       >
         <.icon name="hero-chevron-right" class="w-8 h-8 text-white-800" />
       </.button>

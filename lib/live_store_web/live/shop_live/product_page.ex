@@ -15,6 +15,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
           <.live_component
             module={LiveStoreWeb.ShopLive.CarouselComponent}
             images={@product.images}
+            index={@index}
             id="product-image-carousel"
           />
         </div>
@@ -88,6 +89,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
     socket =
       socket
+      |> assign(:index, 0)
       |> assign(:product, product)
       |> assign(:selected_variant, nil)
       |> assign(:attribute_map, attribute_map)
@@ -106,7 +108,10 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
        assign(socket,
          selected_variant: selected_variant,
          selected_attributes: selected_attributes,
-         attribute_map: attribute_map
+         attribute_map: attribute_map,
+         index:
+           Enum.find_index(socket.assigns.product.images, &(&1.id == selected_variant.image_id)) ||
+             socket.assigns.index
        )}
     else
       {:noreply, assign(socket, selected_variant: nil)}
@@ -114,7 +119,13 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   end
 
   def handle_params(_params, _url, socket) do
-    {:noreply, socket}
+    variant =
+      case socket.assigns.product.variants do
+        [variant] -> variant
+        _ -> nil
+      end
+
+    {:noreply, assign(socket, selected_variant: variant)}
   end
 
   @impl true
@@ -126,8 +137,9 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
     attribute_map = create_attribute_map(socket.assigns.product.variants, selected_attributes)
 
     selected_variant =
-      case selectable_variants(socket.assigns.product.variants, selected_attributes) do
-        [variant] -> variant
+      case {selectable_variants(socket.assigns.product.variants, selected_attributes), value} do
+        {_variants, ""} -> nil
+        {[variant], _value} -> variant
         _ -> nil
       end
 

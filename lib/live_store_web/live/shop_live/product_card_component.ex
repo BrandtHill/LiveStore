@@ -17,7 +17,7 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
 
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-base-content truncate">{@product.name}</h3>
-          <p class="text-sm text-base-content mt-1">{money(@product.price)}</p>
+          <p class="text-sm text-base-content mt-1">{price_range(@product)}</p>
 
           <div class="mt-2">
             <%= if Enum.any?(@product.variants, & &1.stock > 0) do %>
@@ -38,4 +38,15 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
 
   defp image_path(%Product{images: [%Image{path: path} | _]}), do: ~p"/uploads/#{path}"
   defp image_path(_product), do: ~p"/images/logo.svg"
+
+  defp price_range(%Product{variants: variants, price: price}) do
+    case variants
+         |> Enum.map(& &1.price_override)
+         |> Enum.concat([price])
+         |> Enum.filter(& &1)
+         |> Enum.min_max() do
+      {price, price} -> money(price)
+      {low, high} -> [money(low), " - ", money(high)]
+    end
+  end
 end

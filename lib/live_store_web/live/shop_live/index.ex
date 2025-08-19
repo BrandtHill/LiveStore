@@ -22,7 +22,7 @@ defmodule LiveStoreWeb.ShopLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :products, Store.list_products())}
+    {:ok, stream(socket, :products, Store.query_products())}
   end
 
   @impl true

@@ -26,6 +26,14 @@ defmodule LiveStore.Store do
     |> Repo.all()
   end
 
+  def query_products() do
+    Repo.all(
+      from p in Product,
+        join: v in assoc(p, :variants),
+        preload: [{:variants, v}, :images]
+    )
+  end
+
   def get_product!(id) do
     Product
     |> Repo.get!(id)
@@ -85,6 +93,10 @@ defmodule LiveStore.Store do
 
   def change_variant(%Variant{} = variant, params \\ %{}) do
     Variant.changeset(variant, params)
+  end
+
+  def delete_variant(%Variant{} = variant) do
+    Repo.delete(variant)
   end
 
   ## Images

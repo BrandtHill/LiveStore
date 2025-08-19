@@ -39,7 +39,7 @@ defmodule LiveStore.Repo.Migrations.CreateProducts do
       add :stock, :integer, null: false
       add :price_override, :integer
       add :product_id, references(:products, on_delete: :delete_all), null: false
-      add :attributes, :map, null: false
+      add :attributes, :map, null: true
 
       timestamps()
     end

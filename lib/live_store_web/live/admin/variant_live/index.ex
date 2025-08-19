@@ -64,4 +64,12 @@ defmodule LiveStoreWeb.Admin.VariantLive.Index do
       _ -> nil
     end)
   end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    variant = Enum.find(socket.assigns.product.variants, &(&1.id == id))
+    Store.delete_variant(variant)
+
+    {:noreply, stream_delete(socket, :variants, variant)}
+  end
 end

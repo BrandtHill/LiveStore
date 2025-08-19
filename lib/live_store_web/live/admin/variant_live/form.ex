@@ -35,15 +35,11 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
           </.inputs_for>
 
           <div class="mt-6">
-            <label class="block font-medium mb-2">Variant Image</label>
+            <label class="text-xs opacity-60 mb-2">Variant Image</label>
             <div class="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-2">
               <label
                 :for={image <- @product.images ++ [%Image{id: ""}]}
-                class={[
-                  "cursor-pointer rounded-lg overflow-hidden border-2 flex items-center justify-center aspect-square",
-                  ((@form[:image_id].value || "") == image.id && "border-primary") ||
-                    "border-transparent hover:border-base-300"
-                ]}
+                class={"cursor-pointer rounded-lg overflow-hidden border-2 flex items-center justify-center aspect-square #{((@form[:image_id].value || "") == image.id && "border-primary") || "border-transparent hover:border-base-300"}"}
               >
                 <input
                   type="radio"
@@ -103,7 +99,7 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
 
   @impl true
   def handle_event("validate", %{"variant" => variant_params}, socket) do
-    changeset = Store.change_variant(socket.assigns.variant, variant_params) |> IO.inspect()
+    changeset = Store.change_variant(socket.assigns.variant, variant_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
