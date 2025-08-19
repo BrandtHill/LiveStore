@@ -15,13 +15,16 @@ defmodule LiveStoreWeb.UserLive.Settings do
       </div>
 
       <div>
-        <.link
-          href={~p"/account/logout"}
-          method="delete"
-          class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm  hover:bg-base-300"
-        >
+        <.button href={~p"/account/logout"} method="delete">
           Log out
-        </.link>
+        </.button>
+      </div>
+
+      <div class="divider" />
+      <div>
+        <.button navigate={~p"/account/orders"}>
+          Orders
+        </.button>
       </div>
 
       <div class="divider" />

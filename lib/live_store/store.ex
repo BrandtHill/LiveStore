@@ -214,9 +214,28 @@ defmodule LiveStore.Store do
     end)
   end
 
+  def get_order(id) do
+    Order
+    |> Repo.get(id)
+    |> Repo.preload(items: [variant: [product: :images]])
+  end
+
   def get_order_by_stripe_id(stripe_id) do
     Order
     |> Repo.get_by(stripe_id: stripe_id)
-    |> Repo.preload([items: [variant: [product: :images]]])
+    |> Repo.preload(items: [variant: [product: :images]])
+  end
+
+  def get_orders_by_user(%User{id: user_id}) do
+    Repo.all(
+      from o in Order,
+        where: [user_id: ^user_id],
+        order_by: [desc: :inserted_at],
+        preload: [items: [variant: :product]]
+    )
+  end
+
+  def get_orders() do
+    Repo.all(from Order, order_by: [desc: :inserted_at], preload: [items: [variant: :product]])
   end
 end

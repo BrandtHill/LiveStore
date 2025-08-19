@@ -7,18 +7,20 @@ defmodule LiveStoreWeb.OrderLive.Success do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-4xl mx-auto p-6">
-      <.header>
-        🎉 Order Successful!
-        <:subtitle>Thank you for your purchase, your order is now being processed.</:subtitle>
-      </.header>
+    <Layouts.app {assigns}>
+      <div class="max-w-4xl mx-auto p-6">
+        <.header>
+          🎉 Order Successful!
+          <:subtitle>Thank you for your purchase, your order is now being processed.</:subtitle>
+        </.header>
 
-      <OrderComponents.large_card :if={@order} order={@order} />
+        <OrderComponents.large_card :if={@order} order={@order} />
 
-      <div class="mt-8 text-center">
-        <.button navigate={~p"/"} variant="primary">Continue Shopping</.button>
+        <div class="mt-8 text-center">
+          <.button navigate={~p"/"} variant="primary">Continue Shopping</.button>
+        </div>
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 

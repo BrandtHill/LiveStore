@@ -2,42 +2,75 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
+  alias LiveStore.Store.Image
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-3xl p-4">
-      <.header>
-        {@page_title}
-        <:subtitle>Use this form to manage variant records in your database.</:subtitle>
-      </.header>
+    <Layouts.app {assigns}>
+      <div class="mx-auto max-w-3xl p-4">
+        <.header>
+          {@page_title}
+          <:subtitle>Use this form to manage variant records in your database.</:subtitle>
+        </.header>
 
-      <.form
-        for={@form}
-        id="variant-form"
-        phx-change="validate"
-        phx-submit="save"
-      >
-        <.input field={@form[:sku]} type="text" label="SKU" />
-        <.input field={@form[:stock]} type="number" label="Stock" />
-        <.input field={@form[:price_override]} type="number" label="Price Override" />
-        <i>{money(@form[:price_override].value)}</i>
+        <.form
+          for={@form}
+          id="variant-form"
+          phx-change="validate"
+          phx-submit="save"
+        >
+          <.input field={@form[:sku]} type="text" label="SKU" />
+          <.input field={@form[:stock]} type="number" label="Stock" />
+          <.input field={@form[:price_override]} type="number" label="Price Override" />
+          <i>{money(@form[:price_override].value)}</i>
 
-        <.inputs_for :let={attr} field={@form[:attributes]}>
-          <.input hidden field={attr[:type]} />
-          <.input
-            type="text"
-            field={attr[:value]}
-            label={"Attribute #{attr.index + 1}: #{attr[:type].value}"}
-          />
-        </.inputs_for>
+          <.inputs_for :let={attr} field={@form[:attributes]}>
+            <.input hidden field={attr[:type]} />
+            <.input
+              type="text"
+              field={attr[:value]}
+              label={"Attribute #{attr.index + 1}: #{attr[:type].value}"}
+            />
+          </.inputs_for>
 
-        <footer class="mt-8">
-          <.button phx-disable-with="Saving..." variant="primary">Save Variant</.button>
-          <.button navigate={~p"/admin/products/#{@product}/variants"}>Cancel</.button>
-        </footer>
-      </.form>
-    </div>
+          <div class="mt-6">
+            <label class="block font-medium mb-2">Variant Image</label>
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-2">
+              <label
+                :for={image <- @product.images ++ [%Image{id: ""}]}
+                class={[
+                  "cursor-pointer rounded-lg overflow-hidden border-2 flex items-center justify-center aspect-square",
+                  ((@form[:image_id].value || "") == image.id && "border-primary") ||
+                    "border-transparent hover:border-base-300"
+                ]}
+              >
+                <input
+                  type="radio"
+                  name={@form[:image_id].name}
+                  value={image.id || ""}
+                  checked={@form[:image_id].value == image.id}
+                  class="hidden"
+                />
+                <img
+                  :if={image.id != ""}
+                  src={~p"/uploads/#{image.path}"}
+                  class="aspect-square object-cover"
+                />
+                <.icon :if={image.id == ""} name="hero-x-mark" class="size-12" />
+              </label>
+            </div>
+          </div>
+
+          <div></div>
+
+          <footer class="mt-8">
+            <.button phx-disable-with="Saving..." variant="primary">Save Variant</.button>
+            <.button navigate={~p"/admin/products/#{@product}/variants"}>Cancel</.button>
+          </footer>
+        </.form>
+      </div>
+    </Layouts.app>
     """
   end
 
@@ -70,7 +103,7 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
 
   @impl true
   def handle_event("validate", %{"variant" => variant_params}, socket) do
-    changeset = Store.change_variant(socket.assigns.variant, variant_params)
+    changeset = Store.change_variant(socket.assigns.variant, variant_params) |> IO.inspect()
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 

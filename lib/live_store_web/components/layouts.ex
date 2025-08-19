@@ -13,6 +13,112 @@ defmodule LiveStoreWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
+  Renders your app layout.
+
+  This function is typically invoked from every template,
+  and it often contains your application menu, sidebar,
+  or similar.
+
+  ## Examples
+
+      <Layouts.app flash={@flash}>
+        <h1>Content</h1>
+      </Layouts.app>
+
+  """
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+
+  attr :current_user, :map, default: nil
+
+  slot :inner_block, required: true
+
+  def app(assigns) do
+    ~H"""
+    <nav class="shadow-md fixed z-10 w-full bg-base-100 h-20">
+      <div class="px-4 h-full flex items-center justify-between">
+        <a class="flex items-center gap-2" href="/">
+          <.icon name="hero-building-storefront" class="w-8 h-8 text-red-400" />
+          <div class="font-semibold text-xl">Fyrebrand Prints</div>
+        </a>
+        <.theme_toggle />
+        <div>
+          <input id="nav-menu-toggle" type="checkbox" class="hidden peer" />
+          <label
+            for="nav-menu-toggle"
+            class="cursor-pointer md:hidden p-2 rounded hover:bg-base-100"
+          >
+            <.icon name="hero-bars-3" class="w-6 h-6 text-base-content" />
+          </label>
+
+          <div class="absolute top-20 right-0 w-max
+        bg-base-100 flex-col items-start px-4 gap-3 pb-4
+        hidden peer-checked:flex mr-1
+        rounded-lg shadow-xl ring-1 ring-base-100
+        md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0 md:ring-0 md:shadow-none">
+            <.link
+              :if={@current_user && @current_user.admin}
+              href={~p"/admin/orders"}
+              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+            >
+              <.icon name="hero-wrench" /> Orders
+            </.link>
+
+            <.link
+              :if={@current_user && @current_user.admin}
+              href={~p"/admin/products"}
+              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+            >
+              <.icon name="hero-wrench" /> Products
+            </.link>
+
+            <.link
+              :if={@current_user}
+              href={~p"/account/settings"}
+              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+            >
+              <.icon name="hero-user" /> Account
+            </.link>
+
+            <.link
+              :if={is_nil(@current_user)}
+              href={~p"/account/login"}
+              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+            >
+              <.icon name="hero-user" /> Login
+            </.link>
+
+            <.link
+              href="/cart"
+              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+            >
+              <div class="relative">
+                <.icon name="hero-shopping-cart" />
+
+                <span
+                  :if={length(@cart.items) > 0}
+                  class="absolute -top-1 -right-0.5 items-center px-1 py-0.5 text-xs font-bold leading-none bg-red-400 rounded-full"
+                >
+                  {Enum.sum_by(@cart.items, & &1.quantity)}
+                </span>
+              </div>
+              Cart
+            </.link>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="px-4 py-20 sm:px-6 lg:px-8">
+      <div class="mx-auto my-4">
+        {render_slot(@inner_block)}
+      </div>
+    </main>
+
+    <.flash_group flash={@flash} />
+    """
+  end
+
+  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples

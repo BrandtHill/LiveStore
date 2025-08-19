@@ -434,7 +434,7 @@ defmodule LiveStoreWeb.CoreComponents do
             {render_slot(col, @row_item.(row))}
           </td>
           <td :if={@action != []} class="w-0 font-semibold">
-            <div class="flex gap-4">
+            <div class="flex gap-4 w-max">
               <%= for action <- @action do %>
                 {render_slot(action, @row_item.(row))}
               <% end %>
@@ -521,6 +521,23 @@ defmodule LiveStoreWeb.CoreComponents do
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
+    """
+  end
+
+  attr :message, :string, required: true
+
+  slot :inner_block, required: true
+
+  def tooltip(assigns) do
+    ~H"""
+    <div class="relative group inline-block">
+      {render_slot(@inner_block)}
+      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2
+                  hidden group-hover:block whitespace-nowrap
+                  bg-base-300 text-content text-xs rounded-md px-2 py-1 shadow-lg z-10">
+        {@message}
+      </div>
+    </div>
     """
   end
 

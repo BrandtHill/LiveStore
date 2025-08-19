@@ -9,70 +9,72 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 px-6 py-8 max-w-6xl mx-auto">
-      <div>
-        <.live_component
-          module={LiveStoreWeb.ShopLive.CarouselComponent}
-          images={@product.images}
-          id="product-image-carousel"
-        />
-      </div>
-
-      <div class="space-y-4">
-        <h1 class="text-3xl font-bold text-base-content">{@product.name}</h1>
-        <div class="prose prose-sm max-w-none">
-          {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
-        </div>
-
+    <Layouts.app {assigns}>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 px-6 py-8 max-w-6xl mx-auto">
         <div>
-          <span class="text-base-content text-lg pt-4 pr-2">
-            {money(price(@product, @selected_variant))}
-          </span>
-          <%= case {@selected_variant, in_stock?(@product, @selected_variant)} do %>
-            <% {nil, _} -> %>
-              <span></span>
-            <% {_, true} -> %>
-              <span class="text-sm text-success font-medium">✔ In Stock</span>
-            <% {_, false} -> %>
-              <span class="text-sm text-error font-medium">✖ Out of Stock</span>
-          <% end %>
+          <.live_component
+            module={LiveStoreWeb.ShopLive.CarouselComponent}
+            images={@product.images}
+            id="product-image-carousel"
+          />
         </div>
 
-        <div class="space-y-4 mt-6">
-          <form>
-            <div :for={attr_type <- @product.attribute_types} class="pb-4">
-              <.label>{attr_type}</.label>
-              <select
-                name={"attributes[#{attr_type}]"}
-                phx-change="select_attribute"
-                class="w-full border rounded phx-3 py-2 bg-base-100 text-base-content"
-              >
-                <option value="">Choose {attr_type}...</option>
-                <option
-                  :for={{attr_val, disabled?} <- @attribute_map[attr_type]}
-                  value={attr_val}
-                  disabled={disabled?}
-                  selected={@selected_attributes[attr_type] == attr_val}
+        <div class="space-y-4">
+          <h1 class="text-3xl font-bold text-base-content">{@product.name}</h1>
+          <div class="prose prose-sm max-w-none">
+            {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
+          </div>
+
+          <div>
+            <span class="text-base-content text-lg pt-4 pr-2">
+              {money(price(@product, @selected_variant))}
+            </span>
+            <%= case {@selected_variant, in_stock?(@product, @selected_variant)} do %>
+              <% {nil, _} -> %>
+                <span></span>
+              <% {_, true} -> %>
+                <span class="text-sm text-success font-medium">✔ In Stock</span>
+              <% {_, false} -> %>
+                <span class="text-sm text-error font-medium">✖ Out of Stock</span>
+            <% end %>
+          </div>
+
+          <div class="space-y-4 mt-6">
+            <form>
+              <div :for={attr_type <- @product.attribute_types} class="pb-4">
+                <.label>{attr_type}</.label>
+                <select
+                  name={"attributes[#{attr_type}]"}
+                  phx-change="select_attribute"
+                  class="w-full border rounded phx-3 py-2 bg-base-100 text-base-content"
                 >
-                  {attr_val}
-                </option>
-              </select>
-            </div>
-          </form>
+                  <option value="">Choose {attr_type}...</option>
+                  <option
+                    :for={{attr_val, disabled?} <- @attribute_map[attr_type]}
+                    value={attr_val}
+                    disabled={disabled?}
+                    selected={@selected_attributes[attr_type] == attr_val}
+                  >
+                    {attr_val}
+                  </option>
+                </select>
+              </div>
+            </form>
 
-          <span :if={@selected_variant} class="text-base-content font-medium">
-            SKU: {@selected_variant.sku}
-          </span>
+            <span :if={@selected_variant} class="text-base-content font-medium">
+              SKU: {@selected_variant.sku}
+            </span>
+          </div>
+
+          <.button
+            :if={@selected_variant && @selected_variant.stock > 0}
+            phx-click="add_to_cart"
+          >
+            Add to Cart
+          </.button>
         </div>
-
-        <.button
-          :if={@selected_variant && @selected_variant.stock > 0}
-          phx-click="add_to_cart"
-        >
-          Add to Cart
-        </.button>
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 

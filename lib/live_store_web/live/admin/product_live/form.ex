@@ -8,126 +8,130 @@ defmodule LiveStoreWeb.Admin.ProductLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-3xl p-4">
-      <.header>
-        {@page_title}
-        <:subtitle>Use this form to manage product records in your database.</:subtitle>
-      </.header>
+    <Layouts.app {assigns}>
+      <div class="mx-auto max-w-3xl p-4">
+        <.header>
+          {@page_title}
+          <:subtitle>Use this form to manage product records in your database.</:subtitle>
+        </.header>
 
-      <.form
-        for={@form}
-        id="product-form"
-        phx-change="validate"
-        phx-debounce="0"
-        phx-submit="save"
-      >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:slug]} type="text" label="URL Slug" />
-        <.input
-          field={@form[:description]}
-          type="textarea"
-          label="Description"
-          phx-hook="ResizeableTextarea"
-        />
-        <.input field={@form[:price]} type="number" label="Price" phx-debounce="0" />
-        <i>{money(@form[:price].value)}</i>
+        <.form
+          for={@form}
+          id="product-form"
+          phx-change="validate"
+          phx-debounce="0"
+          phx-submit="save"
+        >
+          <.input field={@form[:name]} type="text" label="Name" />
+          <.input field={@form[:slug]} type="text" label="URL Slug" />
+          <.input
+            field={@form[:description]}
+            type="textarea"
+            label="Description"
+            phx-hook="ResizeableTextarea"
+          />
+          <.input field={@form[:price]} type="number" label="Price" phx-debounce="0" />
+          <i>{money(@form[:price].value)}</i>
 
-        <div class="mt-4 space-y-4">
-          <%= for {attr_type, index} <- Enum.with_index(@attribute_types) do %>
-            <div class="flex items-bottom gap-2 my-1">
-              <.input
-                type="text"
-                label={"Product Attribute #{index + 1}"}
-                name="product[attribute_types][]"
-                value={attr_type}
-              />
-              <.button
-                class="btn btn-sm h-8.5 btn-secondary mt-6.5"
-                type="button"
-                phx-click="remove_attribute_type"
-                value={attr_type}
-              >
-                ✕
-              </.button>
-            </div>
-          <% end %>
-
-          <.error :for={{msg, _} <- Keyword.get_values(@form.errors, :attribute_types)}>{msg}</.error>
-
-          <.button
-            class="btn btn-sm btn-secondary mt-2"
-            type="button"
-            phx-click="add_attribute_type"
-          >
-            + Add Attribute Type
-          </.button>
-        </div>
-
-        <div class="py-4">
-          <.label>Add Product Images</.label>
-          <.live_file_input upload={@uploads.new_images} class="custom-file-input" />
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            <div :for={image <- @all_images} class="image-row flex flex-col items-center gap-2">
-              <div :if={image.id} class="relative">
-                <img src={~p"/uploads/#{image.path}"} class="aspect-square object-cover rounded-lg" />
-                <.icon
-                  name="hero-check-circle-solid"
-                  class="absolute top-1 right-1 size-8 opacity-85 text-success"
+          <div class="mt-4 space-y-4">
+            <%= for {attr_type, index} <- Enum.with_index(@attribute_types) do %>
+              <div class="flex items-bottom gap-2 my-1">
+                <.input
+                  type="text"
+                  label={"Product Attribute #{index + 1}"}
+                  name="product[attribute_types][]"
+                  value={attr_type}
                 />
+                <.button
+                  class="btn btn-sm h-8.5 btn-secondary mt-6.5"
+                  type="button"
+                  phx-click="remove_attribute_type"
+                  value={attr_type}
+                >
+                  ✕
+                </.button>
               </div>
+            <% end %>
 
-              <div :if={image.ref} class="relative">
-                <.live_img_preview
-                  entry={Enum.find(@uploads.new_images.entries, &(&1.ref == image.ref))}
-                  class="aspect-square object-cover rounded-lg"
-                />
-                <.icon
-                  name="hero-ellipsis-horizontal-circle-solid"
-                  class="absolute top-1 right-1 size-8 opacity-75 text-gray-100"
-                />
-              </div>
+            <.error :for={{msg, _} <- Keyword.get_values(@form.errors, :attribute_types)}>
+              {msg}
+            </.error>
 
-              <div class="flex gap-2">
-                <.button
-                  :if={image.priority < length(@all_images) - 1}
-                  type="button"
-                  class="btn btn-secondary"
-                  phx-click="move_img"
-                  phx-value-priority={image.priority}
-                  phx-value-direction={1}
-                >
-                  ←
-                </.button>
-                <.button
-                  :if={image.priority > 0}
-                  type="button"
-                  class="btn btn-secondary"
-                  phx-click="move_img"
-                  phx-value-priority={image.priority}
-                  phx-value-direction={-1}
-                >
-                  →
-                </.button>
-                <.button
-                  type="button"
-                  variant="primary"
-                  phx-click={if image.id, do: "delete_img", else: "cancel_img"}
-                  phx-value-id={image.id}
-                  phx-value-ref={image.ref}
-                >
-                  Delete
-                </.button>
+            <.button
+              class="btn btn-sm btn-secondary mt-2"
+              type="button"
+              phx-click="add_attribute_type"
+            >
+              + Add Attribute Type
+            </.button>
+          </div>
+
+          <div class="py-4">
+            <.label>Add Product Images</.label>
+            <.live_file_input upload={@uploads.new_images} class="custom-file-input" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+              <div :for={image <- @all_images} class="image-row flex flex-col items-center gap-2">
+                <div :if={image.id} class="relative">
+                  <img src={~p"/uploads/#{image.path}"} class="aspect-square object-cover rounded-lg" />
+                  <.icon
+                    name="hero-check-circle-solid"
+                    class="absolute top-1 right-1 size-8 opacity-85 text-success"
+                  />
+                </div>
+
+                <div :if={image.ref} class="relative">
+                  <.live_img_preview
+                    entry={Enum.find(@uploads.new_images.entries, &(&1.ref == image.ref))}
+                    class="aspect-square object-cover rounded-lg"
+                  />
+                  <.icon
+                    name="hero-ellipsis-horizontal-circle-solid"
+                    class="absolute top-1 right-1 size-8 opacity-75 text-gray-100"
+                  />
+                </div>
+
+                <div class="flex gap-2">
+                  <.button
+                    :if={image.priority < length(@all_images) - 1}
+                    type="button"
+                    class="btn btn-secondary"
+                    phx-click="move_img"
+                    phx-value-priority={image.priority}
+                    phx-value-direction={1}
+                  >
+                    ←
+                  </.button>
+                  <.button
+                    :if={image.priority > 0}
+                    type="button"
+                    class="btn btn-secondary"
+                    phx-click="move_img"
+                    phx-value-priority={image.priority}
+                    phx-value-direction={-1}
+                  >
+                    →
+                  </.button>
+                  <.button
+                    type="button"
+                    variant="primary"
+                    phx-click={if image.id, do: "delete_img", else: "cancel_img"}
+                    phx-value-id={image.id}
+                    phx-value-ref={image.ref}
+                  >
+                    Delete
+                  </.button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <footer class="mt-8">
-          <.button phx-disable-with="Saving..." variant="primary">Save Product</.button>
-          <.button navigate={@return_path}>Cancel</.button>
-        </footer>
-      </.form>
-    </div>
+          <footer class="mt-8">
+            <.button phx-disable-with="Saving..." variant="primary">Save Product</.button>
+            <.button navigate={@return_path}>Cancel</.button>
+          </footer>
+        </.form>
+      </div>
+    </Layouts.app>
     """
   end
 

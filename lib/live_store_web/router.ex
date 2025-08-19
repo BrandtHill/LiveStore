@@ -43,6 +43,10 @@ defmodule LiveStoreWeb.Router do
         live "/products/:id/variants/new", VariantLive.Form, :new
         live "/products/:id/variants/:variant_id/edit", VariantLive.Form, :edit
       end
+
+      live_session :orders_admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
+        live "/orders", OrderLive.Index, :index
+      end
     end
   end
 
@@ -75,6 +79,8 @@ defmodule LiveStoreWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{LiveStoreWeb.UserAuth, :require_authenticated}] do
+      live "/account/orders", OrderLive.Index, :index
+      live "/account/orders/:id", OrderLive.Show, :show
       live "/account/settings", UserLive.Settings, :edit
       live "/account/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end

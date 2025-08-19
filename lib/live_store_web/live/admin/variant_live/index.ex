@@ -9,37 +9,39 @@ defmodule LiveStoreWeb.Admin.VariantLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header>
-      Listing Variants for {@product.id}
-      <:actions>
-        <.link patch={~p"/admin/products/#{@product}/variants/new"}>
-          <.button>New Variant</.button>
-        </.link>
-      </:actions>
-    </.header>
+    <Layouts.app {assigns}>
+      <.header>
+        Listing Variants for {@product.name}
+        <:actions>
+          <.link patch={~p"/admin/products/#{@product}/variants/new"}>
+            <.button>New Variant</.button>
+          </.link>
+        </:actions>
+      </.header>
 
-    <.table id="variants" rows={@streams.variants}>
-      <:col :let={{_id, variant}} label="SKU">{variant.sku}</:col>
-      <:col :let={{_id, variant}} label="Price Override">{money(variant.price_override)}</:col>
-      <:col :let={{_id, variant}} label="Stock">{variant.stock}</:col>
-      <:col :let={{_id, variant}} :for={attr_type <- @product.attribute_types} label={attr_type}>
-        {get_attr(variant, attr_type)}
-      </:col>
+      <.table id="variants" rows={@streams.variants}>
+        <:col :let={{_id, variant}} label="SKU">{variant.sku}</:col>
+        <:col :let={{_id, variant}} label="Price Override">{money(variant.price_override)}</:col>
+        <:col :let={{_id, variant}} label="Stock">{variant.stock}</:col>
+        <:col :let={{_id, variant}} :for={attr_type <- @product.attribute_types} label={attr_type}>
+          {get_attr(variant, attr_type)}
+        </:col>
 
-      <:action :let={{_id, variant}}>
-        <.link patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
-      </:action>
-      <:action :let={{id, variant}}>
-        <.link
-          phx-click={JS.push("delete", value: %{id: variant.id}) |> hide("##{id}")}
-          data-confirm="Are you sure?"
-        >
-          Delete
-        </.link>
-      </:action>
-    </.table>
+        <:action :let={{_id, variant}}>
+          <.link patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
+        </:action>
+        <:action :let={{id, variant}}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: variant.id}) |> hide("##{id}")}
+            data-confirm="Are you sure?"
+          >
+            Delete
+          </.link>
+        </:action>
+      </.table>
 
-    <.back navigate={~p"/admin/products/#{@product}"}>Back to product</.back>
+      <.back navigate={~p"/admin/products/#{@product}"}>Back to product</.back>
+    </Layouts.app>
     """
   end
 

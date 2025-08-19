@@ -19,8 +19,8 @@ defmodule LiveStore.Store.Order do
     field :stripe_id, :string
 
     field :status, Ecto.Enum,
-      values: [:pending, :canceled, :shipped, :complete, :refunded],
-      default: :pending
+      values: [:processing, :canceled, :shipped, :complete, :refunded],
+      default: :processing
 
     field :shipping_details, :map
 

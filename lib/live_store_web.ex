@@ -38,9 +38,8 @@ defmodule LiveStoreWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: LiveStoreWeb.Layouts]
+      # , layouts: [html: LiveStoreWeb.Layouts]
+      use Phoenix.Controller, formats: [:html, :json]
 
       use Gettext, backend: LiveStoreWeb.Gettext
 
@@ -52,8 +51,7 @@ defmodule LiveStoreWeb do
 
   def live_view do
     quote do
-      use Phoenix.LiveView,
-        layout: {LiveStoreWeb.Layouts, :app}
+      use Phoenix.LiveView
 
       unquote(html_helpers())
     end
@@ -92,6 +90,7 @@ defmodule LiveStoreWeb do
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
+      alias LiveStoreWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

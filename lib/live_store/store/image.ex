@@ -3,6 +3,7 @@ defmodule LiveStore.Store.Image do
   import Ecto.Changeset
 
   alias LiveStore.Store.Product
+  alias LiveStore.Store.Variant
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
@@ -13,6 +14,7 @@ defmodule LiveStore.Store.Image do
     field :priority, :integer, default: 0
 
     belongs_to :product, Product
+    has_one :variant, Variant
 
     timestamps()
   end
