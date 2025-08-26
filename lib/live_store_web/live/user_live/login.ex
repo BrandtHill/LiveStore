@@ -7,50 +7,52 @@ defmodule LiveStoreWeb.UserLive.Login do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm space-y-4">
-      <div class="text-center">
-        <.header>
-          <p>Log in</p>
-          <:subtitle>
-            <%= if @current_user do %>
-              You need to reauthenticate to perform sensitive actions on your account.
-            <% end %>
-          </:subtitle>
-        </.header>
-      </div>
-
-      <div :if={local_mail_adapter?()} class="alert alert-info">
-        <.icon name="hero-information-circle" class="size-6 shrink-0" />
-        <div>
-          <p>You are running the local mail adapter.</p>
-          <p>
-            To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
-          </p>
+    <Layouts.app {assigns}>
+      <div class="mx-auto max-w-sm space-y-4">
+        <div class="text-center">
+          <.header>
+            <p>Log in</p>
+            <:subtitle>
+              <%= if @current_user do %>
+                You need to reauthenticate to perform sensitive actions on your account.
+              <% end %>
+            </:subtitle>
+          </.header>
         </div>
-      </div>
 
-      <.form
-        :let={f}
-        for={@form}
-        id="login_form_magic"
-        action={~p"/account/login"}
-        phx-submit="submit_magic"
-      >
-        <.input
-          readonly={!!@current_user}
-          field={f[:email]}
-          type="email"
-          label="Email"
-          autocomplete="username"
-          required
-          phx-mounted={JS.focus()}
-        />
-        <.button class="btn btn-primary w-full">
-          Log in {if is_nil(@current_user), do: "or sign up "}with email
-          <span aria-hidden="true">→</span>
-        </.button>
-      </.form>
-    </div>
+        <div :if={local_mail_adapter?()} class="alert alert-info">
+          <.icon name="hero-information-circle" class="size-6 shrink-0" />
+          <div>
+            <p>You are running the local mail adapter.</p>
+            <p>
+              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
+            </p>
+          </div>
+        </div>
+
+        <.form
+          :let={f}
+          for={@form}
+          id="login_form_magic"
+          action={~p"/account/login"}
+          phx-submit="submit_magic"
+        >
+          <.input
+            readonly={!!@current_user}
+            field={f[:email]}
+            type="email"
+            label="Email"
+            autocomplete="username"
+            required
+            phx-mounted={JS.focus()}
+          />
+          <.button class="btn btn-primary w-full">
+            Log in {if is_nil(@current_user), do: "or sign up "}with email
+            <span aria-hidden="true">→</span>
+          </.button>
+        </.form>
+      </div>
+    </Layouts.app>
     """
   end
 

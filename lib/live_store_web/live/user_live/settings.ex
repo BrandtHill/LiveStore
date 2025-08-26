@@ -6,40 +6,42 @@ defmodule LiveStoreWeb.UserLive.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm space-y-4">
-      <div class="text-center">
-        <.header>
-          Account Settings
-          <:subtitle>Manage your account email address settings</:subtitle>
-        </.header>
+    <Layouts.app {assigns}>
+      <div class="mx-auto max-w-sm space-y-4">
+        <div class="text-center">
+          <.header>
+            Account Settings
+            <:subtitle>Manage your account email address settings</:subtitle>
+          </.header>
+        </div>
+
+        <div>
+          <.button href={~p"/account/logout"} method="delete">
+            Log out
+          </.button>
+        </div>
+
+        <div class="divider" />
+        <div>
+          <.button navigate={~p"/account/orders"}>
+            Orders
+          </.button>
+        </div>
+
+        <div class="divider" />
+
+        <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+          <.input
+            field={@email_form[:email]}
+            type="email"
+            label="Email"
+            autocomplete="username"
+            required
+          />
+          <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
+        </.form>
       </div>
-
-      <div>
-        <.button href={~p"/account/logout"} method="delete">
-          Log out
-        </.button>
-      </div>
-
-      <div class="divider" />
-      <div>
-        <.button navigate={~p"/account/orders"}>
-          Orders
-        </.button>
-      </div>
-
-      <div class="divider" />
-
-      <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-        <.input
-          field={@email_form[:email]}
-          type="email"
-          label="Email"
-          autocomplete="username"
-          required
-        />
-        <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
-      </.form>
-    </div>
+    </Layouts.app>
     """
   end
 

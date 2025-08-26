@@ -21,6 +21,7 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
     end
 
     create unique_index(:cart_items, [:cart_id, :variant_id])
+    create index(:cart_items, [:variant_id])
 
     # Orders
 
@@ -28,6 +29,7 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :total, :integer
       add :stripe_id, :string
+      add :tracking_number, :string
       add :status, :string
       add :shipping_details, :map
 
@@ -37,6 +39,7 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
     create index(:orders, [:user_id, :inserted_at])
     create index(:orders, [:status, :inserted_at])
     create unique_index(:orders, [:stripe_id])
+    create unique_index(:orders, [:tracking_number])
 
     create table(:order_items) do
       add :order_id, references(:orders, on_delete: :delete_all), null: false

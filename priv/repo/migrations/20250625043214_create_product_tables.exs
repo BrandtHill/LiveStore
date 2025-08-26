@@ -11,7 +11,7 @@ defmodule LiveStore.Repo.Migrations.CreateProducts do
       add :slug, :citext, null: false
       add :description, :text
       add :price, :integer, null: false, default: 0
-      add :attribute_types, {:array, :string}, default: []
+      add :attribute_types, {:array, :string}, null: true
 
       timestamps()
     end
@@ -39,6 +39,7 @@ defmodule LiveStore.Repo.Migrations.CreateProducts do
       add :stock, :integer, null: false
       add :price_override, :integer
       add :product_id, references(:products, on_delete: :delete_all), null: false
+      add :image_id, references(:images, on_delete: :nilify_all), null: true
       add :attributes, :map, null: true
 
       timestamps()

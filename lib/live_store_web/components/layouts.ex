@@ -36,10 +36,19 @@ defmodule LiveStoreWeb.Layouts do
     ~H"""
     <nav class="shadow-md fixed z-10 w-full bg-base-100 h-20">
       <div class="px-4 h-full flex items-center justify-between">
-        <a class="flex items-center gap-2" href="/">
-          <.icon name="hero-building-storefront" class="w-8 h-8 text-red-400" />
-          <div class="font-semibold text-xl">Fyrebrand Prints</div>
-        </a>
+        <div class="flex gap-2">
+          <a class="flex items-center gap-2" href="/">
+            <.icon name="hero-building-storefront" class="w-8 h-8 text-red-400" />
+            <div class="font-semibold text-xl">Fyrebrand Prints</div>
+          </a>
+
+          <.link
+            navigate={~p"/products"}
+            class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
+          >
+            <.icon name="hero-shopping-bag" /> Shop
+          </.link>
+        </div>
         <.theme_toggle />
         <div>
           <input id="nav-menu-toggle" type="checkbox" class="hidden peer" />
@@ -57,7 +66,7 @@ defmodule LiveStoreWeb.Layouts do
         md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0 md:ring-0 md:shadow-none">
             <.link
               :if={@current_user && @current_user.admin}
-              href={~p"/admin/orders"}
+              navigate={~p"/admin/orders"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
               <.icon name="hero-wrench" /> Orders
@@ -65,7 +74,7 @@ defmodule LiveStoreWeb.Layouts do
 
             <.link
               :if={@current_user && @current_user.admin}
-              href={~p"/admin/products"}
+              navigate={~p"/admin/products"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
               <.icon name="hero-wrench" /> Products
@@ -73,7 +82,7 @@ defmodule LiveStoreWeb.Layouts do
 
             <.link
               :if={@current_user}
-              href={~p"/account/settings"}
+              navigate={~p"/account/settings"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
               <.icon name="hero-user" /> Account
@@ -81,14 +90,14 @@ defmodule LiveStoreWeb.Layouts do
 
             <.link
               :if={is_nil(@current_user)}
-              href={~p"/account/login"}
+              navigate={~p"/account/login"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
               <.icon name="hero-user" /> Login
             </.link>
 
             <.link
-              href="/cart"
+              navigate={~p"/cart"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
               <div class="relative">

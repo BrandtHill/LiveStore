@@ -4,6 +4,9 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   alias LiveStore.Store
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
+  alias LiveStore.Store.Image
+  alias LiveStore.Store.Product
+  alias LiveStore.Store.Variant
   alias LiveStore.Stripe
 
   @flat_rate_shipping 500
@@ -24,7 +27,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
               class="flex gap-4 p-4 bg-base-100 rounded shadow-sm items-start border border-base-300"
             >
               <img
-                src={~p"/uploads/#{hd(item.variant.product.images).path}"}
+                src={image_path(item)}
                 class="w-24 h-24 object-cover rounded"
               />
 
@@ -133,8 +136,9 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
   @impl true
   def handle_event("quantity", %{"item" => %{"id" => id, "quantity" => quantity}}, socket) do
-    with %CartItem{id: id} = item <- Enum.find(socket.assigns.cart.items, &(&1.id == id)),
-         {:ok, item} <- Store.edit_cart_item(item, quantity) do
+    with quantity when is_integer(quantity) <- String.to_integer(quantity),
+         %CartItem{id: id} = item <- Enum.find(socket.assigns.cart.items, &(&1.id == id)),
+         {:ok, %CartItem{quantity: ^quantity} = item} <- Store.edit_cart_item(item, quantity) do
       items =
         Enum.map(socket.assigns.cart.items, fn
           %CartItem{id: ^id} -> item
@@ -159,4 +163,15 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
     {:noreply, assign(socket, cart: cart, sub_total: Store.calculate_total(cart))}
   end
+
+  defp image_path(%CartItem{
+         variant: %Variant{
+           image_id: image_id,
+           product: %Product{images: [%Image{path: path} | _] = images}
+         }
+       }) do
+    ~p"/uploads/#{Enum.find_value(images, path, &(&1.id == image_id && &1.path))}"
+  end
+
+  defp image_path(_product), do: ~p"/images/logo.svg"
 end

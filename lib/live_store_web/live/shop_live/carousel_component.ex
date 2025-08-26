@@ -15,18 +15,23 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
   def render(assigns) do
     ~H"""
     <div class="relative w-full max-w-xl mx-auto">
-      <div class="aspect-square overflow-hidden rounded-lg border shadow">
-        <img
-          :if={image = Enum.at(@images, @index)}
-          src={~p"/uploads/#{image.path}"}
-          class="object-cover w-full h-full transition duration-300 ease-in-out"
-        />
+      <div class="aspect-6/5 md:aspect-square overflow-hidden rounded-lg shadow">
+        <div
+          class="flex w-full h-full transition-transform duration-300 ease-in-out"
+          style={"transform: translateX(-#{@index * 100}%)"}
+        >
+          <img
+            :for={image <- @images}
+            src={~p"/uploads/#{image.path}"}
+            class="object-cover w-full h-full flex-shrink-0"
+          />
+        </div>
       </div>
 
       <.button
         phx-click="prev"
         phx-target={@myself}
-        class="absolute top-1/2 left-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
+        class="absolute top-9/19 left-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
       >
         <.icon name="hero-chevron-left" class="w-8 h-8 text-white-800" />
       </.button>
@@ -34,7 +39,7 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
       <.button
         phx-click="next"
         phx-target={@myself}
-        class="absolute top-1/2 right-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
+        class="absolute top-9/19 right-2 transform -translate-y-1/2 flex opacity-50 hover:bg-black/10 rounded-full items-center justify-center w-20 h-20 cursor-pointer"
       >
         <.icon name="hero-chevron-right" class="w-8 h-8 text-white-800" />
       </.button>

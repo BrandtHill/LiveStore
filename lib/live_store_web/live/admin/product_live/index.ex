@@ -26,7 +26,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.Index do
         <:col :let={{_id, product}} label="Description">{preview(product.description)}</:col>
         <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
         <:col :let={{_id, product}} label="Product Attributes">
-          {Enum.join(product.attribute_types, ", ")}
+          {Enum.join(product.attribute_types || [], ", ")}
         </:col>
         <:col :let={{_id, product}} label="Variants">
           <.tooltip :if={product.variants == []} message="You need at least 1 variant per product.">

@@ -34,24 +34,31 @@ defmodule LiveStoreWeb.Admin.ProductLive.Form do
           <i>{money(@form[:price].value)}</i>
 
           <div class="mt-4 space-y-4">
-            <%= for {attr_type, index} <- Enum.with_index(@attribute_types) do %>
-              <div class="flex items-bottom gap-2 my-1">
-                <.input
-                  type="text"
-                  label={"Product Attribute #{index + 1}"}
-                  name="product[attribute_types][]"
-                  value={attr_type}
-                />
-                <.button
-                  class="btn btn-sm h-8.5 btn-secondary mt-6.5"
-                  type="button"
-                  phx-click="remove_attribute_type"
-                  value={attr_type}
-                >
-                  ✕
-                </.button>
-              </div>
-            <% end %>
+            <input
+              :if={@attribute_types == []}
+              type="hidden"
+              name="product[attribute_types][]"
+              value=""
+            />
+            <div
+              :for={{attr_type, index} <- Enum.with_index(@attribute_types)}
+              class="flex items-bottom gap-2 my-1"
+            >
+              <.input
+                type="text"
+                label={"Product Attribute #{index + 1}"}
+                name="product[attribute_types][]"
+                value={attr_type}
+              />
+              <.button
+                class="btn btn-sm h-8.5 btn-secondary mt-6.5"
+                type="button"
+                phx-click="remove_attribute_type"
+                value={attr_type}
+              >
+                ✕
+              </.button>
+            </div>
 
             <.error :for={{msg, _} <- Keyword.get_values(@form.errors, :attribute_types)}>
               {msg}

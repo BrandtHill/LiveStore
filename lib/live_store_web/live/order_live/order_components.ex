@@ -35,7 +35,14 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
       <div class="mt-6">
         <h3 class="font-semibold text-lg mb-2">Shipping Details</h3>
         <div class="text-sm opacity-80 space-y-1">
-          <p>{Jason.encode_to_iodata!(@order.shipping_details)}</p>
+          <p>{@order.shipping_details.name}</p>
+          <p>{@order.shipping_details.street}</p>
+          <p>{@order.shipping_details.street_additional}</p>
+          <p>
+            {@order.shipping_details.city}, {@order.shipping_details.state} {@order.shipping_details.postal_code}
+          </p>
+          <p>{@order.shipping_details.country}</p>
+          <p>{@order.shipping_details.phone}</p>
         </div>
       </div>
 

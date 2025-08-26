@@ -74,8 +74,8 @@ defmodule LiveStore.Store do
 
   def get_variant(variant_id), do: Repo.get(Variant, variant_id)
 
-  def build_variant(%Product{} = product) do
-    attributes = Enum.map(product.attribute_types, fn type -> %Attribute{type: type} end)
+  def build_variant(%Product{attribute_types: types} = product) do
+    attributes = Enum.map(types, fn type -> %Attribute{type: type} end)
     %Variant{} = Ecto.build_assoc(product, :variants, attributes: attributes)
   end
 
@@ -85,10 +85,18 @@ defmodule LiveStore.Store do
     |> Repo.insert_or_update()
   end
 
-  def decrement_variant_stock(%Variant{stock: stock} = variant, quantity) do
-    variant
-    |> Variant.changeset(%{stock: max(0, stock - quantity)})
-    |> Repo.update()
+  def decrement_variant_stock(%Variant{} = variant, quantity) do
+    {1, [variant]} =
+      Repo.update_all(
+        from(v in Variant,
+          where: [id: ^variant.id],
+          update: [set: [stock: fragment("GREATEST(0, ? - ?)", v.stock, ^quantity)]],
+          select: v
+        ),
+        set: [updated_at: DateTime.utc_now()]
+      )
+
+    {:ok, variant}
   end
 
   def change_variant(%Variant{} = variant, params \\ %{}) do
@@ -157,17 +165,21 @@ defmodule LiveStore.Store do
     Repo.preload(cart, [:user, items: [variant: [product: :images]]])
   end
 
-  def add_to_cart(%Cart{id: c_id, items: items}, %Variant{id: v_id}) do
+  def add_to_cart(%Cart{id: c_id, items: items}, %Variant{id: v_id, stock: stock}) do
     item = Enum.find(items, %CartItem{quantity: 0}, &(&1.variant_id == v_id))
 
     item
-    |> CartItem.changeset(%{cart_id: c_id, variant_id: v_id, quantity: item.quantity + 1})
+    |> CartItem.changeset(%{
+      cart_id: c_id,
+      variant_id: v_id,
+      quantity: min(stock, item.quantity + 1)
+    })
     |> Repo.insert_or_update()
   end
 
-  def edit_cart_item(%CartItem{} = item, quantity) do
+  def edit_cart_item(%CartItem{variant: %Variant{stock: stock}} = item, quantity) do
     item
-    |> CartItem.changeset(%{quantity: quantity})
+    |> CartItem.changeset(%{quantity: min(stock, quantity)})
     |> Repo.update()
   end
 
@@ -209,16 +221,36 @@ defmodule LiveStore.Store do
           i |> Map.take([:variant_id, :quantity]) |> Map.put(:price, calculate_item_price(i))
         end)
 
-      # This is an N+1 query, but not a concern for most carts.
-      Enum.each(cart.items, fn i -> decrement_variant_stock(i.variant, i.quantity) end)
-
       Repo.delete_all(from(i in CartItem, where: i.cart_id == ^cart.id))
+
+      # This is an N+1 query, but not a concern for most carts.
+      Enum.each(cart.items, fn i ->
+        case decrement_variant_stock(i.variant, i.quantity) do
+          {:ok, %Variant{stock: 0, id: id}} ->
+            Repo.delete_all(from CartItem, where: [variant_id: ^id])
+
+          {:ok, %Variant{stock: stock, id: id}} ->
+            Repo.update_all(
+              from(ci in CartItem,
+                where: [variant_id: ^id],
+                update: [set: [quantity: fragment("LEAST(?, ?)", ^stock, ci.quantity)]]
+              ),
+              set: [updated_at: DateTime.utc_now()]
+            )
+        end
+      end)
+
+      shipping_details =
+        session.customer_details
+        |> Map.merge(session.customer_details.address)
+        |> Map.put(:street, session.customer_details.address.line1)
+        |> Map.put(:street_additional, session.customer_details.address.line2)
 
       %{
         stripe_id: session.id,
         user_id: user.id,
         total: session.amount_total,
-        shipping_details: session.customer_details,
+        shipping_details: shipping_details,
         items: order_items
       }
       |> Order.changeset()

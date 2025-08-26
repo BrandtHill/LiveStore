@@ -11,7 +11,7 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
       class="border border-base-300 rounded-lg overflow-hidden shadow hover:shadow-lg transition p-4 my-4 w-full max-w-none sm:max-w-xs"
     >
       <div class="flex flex-row sm:flex-col gap-4 items-center sm:items-stretch">
-        <div class="w-24 h-24 sm:w-full sm:h-full sm:aspect-square bg-base-100 flex flex-shrink-0 items-center justify-center overflow-hidden">
+        <div class="w-40 aspect-4/3 sm:w-full sm:h-full md:aspect-square bg-base-100 flex flex-shrink-0 items-center justify-center overflow-hidden">
           <img src={image_path(@product)} class="object-cover w-full h-full" />
         </div>
 

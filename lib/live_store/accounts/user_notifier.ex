@@ -3,6 +3,7 @@ defmodule LiveStore.Accounts.UserNotifier do
 
   alias LiveStore.Mailer
   alias LiveStore.Accounts.User
+  alias LiveStoreWeb.Emails
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
@@ -11,7 +12,7 @@ defmodule LiveStore.Accounts.UserNotifier do
       |> to(recipient)
       |> from({"LiveStore", "contact@example.com"})
       |> subject(subject)
-      |> text_body(body)
+      |> html_body(body)
 
     with {:ok, _metadata} <- Mailer.deliver(email) do
       {:ok, email}
@@ -21,64 +22,30 @@ defmodule LiveStore.Accounts.UserNotifier do
   @doc """
   Deliver instructions to update a user email.
   """
-  def deliver_update_email_instructions(user, url) do
-    deliver(user.email, "Update email instructions", """
+  def deliver_update_email_instructions(%User{} = user, url) do
+    template = Emails.update_email(%{user: user, url: url})
+    html = Emails.heex_to_html(template)
 
-    ==============================
-
-    Hi #{user.email},
-
-    You can change your email by visiting the URL below:
-
-    #{url}
-
-    If you didn't request this change, please ignore this.
-
-    ==============================
-    """)
+    deliver(user.email, "Update email instructions", html)
   end
 
   @doc """
   Deliver instructions to log in with a magic link.
   """
-  def deliver_login_instructions(user, url) do
-    case user do
-      %User{confirmed_at: nil} -> deliver_confirmation_instructions(user, url)
-      _ -> deliver_magic_link_instructions(user, url)
-    end
+  def deliver_login_instructions(%User{} = user, url) do
+    template = Emails.magic_link(%{user: user, url: url})
+    html = Emails.heex_to_html(template)
+
+    deliver(user.email, "Login instructions", html)
   end
 
-  defp deliver_magic_link_instructions(user, url) do
-    deliver(user.email, "Log in instructions", """
+  @doc"""
+  Deliver email after an order has been placed.
+  """
+  def deliver_order_confirmation(%User{} = user, order) do
+    template = Emails.order_confirmation(%{order: order})
+    html = Emails.heex_to_html(template)
 
-    ==============================
-
-    Hi #{user.email},
-
-    You can log into your account by visiting the URL below:
-
-    #{url}
-
-    If you didn't request this email, please ignore this.
-
-    ==============================
-    """)
-  end
-
-  defp deliver_confirmation_instructions(user, url) do
-    deliver(user.email, "Confirmation instructions", """
-
-    ==============================
-
-    Hi #{user.email},
-
-    You can confirm your account by visiting the URL below:
-
-    #{url}
-
-    If you didn't create an account with us, please ignore this.
-
-    ==============================
-    """)
+    deliver(user.email, "Order Confirmation", html)
   end
 end
