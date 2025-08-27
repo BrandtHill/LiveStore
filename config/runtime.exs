@@ -25,6 +25,14 @@ config :stripity_stripe, api_key: System.get_env("STRIPE_SECRET")
 config :live_store, :stripe_public_key, System.get_env("STRIPE_PUBLIC")
 config :live_store, :stripe_webhook_secret, System.get_env("STRIPE_WEBHOOK_SECRET")
 
+config :live_store, :store_name, System.get_env("STORE_NAME", "LiveStore")
+
+config :live_store,
+       :store_subtitle,
+       System.get_env("STORE_SUBTITLE", "A general purpose Phoenix LiveView e-commerce store")
+
+config :live_store, :store_email, System.get_env("STORE_EMAIL", "contact@example.com")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

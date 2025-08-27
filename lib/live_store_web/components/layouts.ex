@@ -34,12 +34,16 @@ defmodule LiveStoreWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <nav class="shadow-md fixed z-10 w-full bg-base-100 h-20">
+    <nav
+      id="main-nav"
+      phx-hook="NavFade"
+      class="fixed z-20 w-full bg-base-100/30 transition duration-500 h-20"
+    >
       <div class="px-4 h-full flex items-center justify-between">
         <div class="flex gap-2">
           <a class="flex items-center gap-2" href="/">
             <.icon name="hero-building-storefront" class="w-8 h-8 text-red-400" />
-            <div class="font-semibold text-xl">Fyrebrand Prints</div>
+            <div class="font-semibold text-xl">{Application.get_env(:live_store, :store_name)}</div>
           </a>
 
           <.link
@@ -59,11 +63,14 @@ defmodule LiveStoreWeb.Layouts do
             <.icon name="hero-bars-3" class="w-6 h-6 text-base-content" />
           </label>
 
-          <div class="absolute top-20 right-0 w-max
-        bg-base-100 flex-col items-start px-4 gap-3 pb-4
+          <div
+            id="link-wrapper"
+            class="absolute top-20 right-0 w-max
+        bg-base-100 md:bg-base-100/0 flex-col items-start px-4 gap-3 pb-4
         hidden peer-checked:flex mr-1
         rounded-lg shadow-xl ring-1 ring-base-100
-        md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0 md:ring-0 md:shadow-none">
+        md:static md:flex md:flex-row md:items-center md:gap-4 md:pb-0 md:ring-0 md:shadow-none"
+          >
             <.link
               :if={@current_user && @current_user.admin}
               navigate={~p"/admin/orders"}

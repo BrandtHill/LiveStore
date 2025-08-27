@@ -10,7 +10,10 @@ defmodule LiveStore.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"LiveStore", "contact@example.com"})
+      |> from(
+        {Application.get_env(:live_store, :store_name),
+         Application.get_env(:live_store, :store_email)}
+      )
       |> subject(subject)
       |> html_body(body)
 
@@ -39,7 +42,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     deliver(user.email, "Login instructions", html)
   end
 
-  @doc"""
+  @doc """
   Deliver email after an order has been placed.
   """
   def deliver_order_confirmation(%User{} = user, order) do

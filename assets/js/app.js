@@ -57,6 +57,22 @@ Hooks.StripeCheckout = {
   }
 }
 
+Hooks.NavFade = {
+  mounted() {
+    window.addEventListener("scroll", () => {
+      const full = "bg-base-100/100"
+      const half = "bg-base-100/30"
+      if (window.scrollY > 50) {
+        this.el.classList.remove(half)
+        this.el.classList.add(full)
+      } else {
+        this.el.classList.remove(full)
+        this.el.classList.add(half)
+      }
+    })
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
   hooks: {...Hooks, ...ColocatedHooks},
