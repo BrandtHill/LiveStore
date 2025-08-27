@@ -17,6 +17,8 @@ defmodule LiveStore.Store.Order do
     has_many :items, OrderItem
 
     field :total, :integer
+    field :amount_shipping, :integer
+    field :amount_tax, :integer
     field :stripe_id, :string
     field :tracking_number, :string
 
@@ -29,7 +31,7 @@ defmodule LiveStore.Store.Order do
     timestamps()
   end
 
-  @required_fields [:status, :total, :stripe_id, :user_id]
+  @required_fields [:status, :total, :stripe_id, :user_id, :amount_shipping, :amount_tax]
   @allowed_fields @required_fields ++ [:tracking_number]
 
   @doc false
@@ -40,6 +42,8 @@ defmodule LiveStore.Store.Order do
     |> cast_embed(:shipping_details, required: true)
     |> validate_required(@required_fields)
     |> validate_number(:total, greater_than_or_equal_to: 0)
+    |> validate_number(:amount_shipping, greater_than_or_equal_to: 0)
+    |> validate_number(:amount_tax, greater_than_or_equal_to: 0)
     |> foreign_key_constraint(:user_id)
     |> unique_constraint(:stripe_id)
     |> unique_constraint(:tracking_number)

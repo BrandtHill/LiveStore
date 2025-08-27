@@ -218,7 +218,9 @@ defmodule LiveStore.Store do
 
       order_items =
         Enum.map(cart.items, fn %CartItem{} = i ->
-          i |> Map.take([:variant_id, :quantity]) |> Map.put(:price, calculate_item_price(i))
+          i
+          |> Map.take([:variant_id, :quantity])
+          |> Map.put(:price, i.variant.price_override || i.variant.product.price)
         end)
 
       Repo.delete_all(from(i in CartItem, where: i.cart_id == ^cart.id))
@@ -253,6 +255,7 @@ defmodule LiveStore.Store do
         shipping_details: shipping_details,
         items: order_items
       }
+      |> Map.merge(session.total_details)
       |> Order.changeset()
       |> Repo.insert()
     end)

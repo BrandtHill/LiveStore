@@ -9,8 +9,6 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   alias LiveStore.Store.Variant
   alias LiveStore.Stripe
 
-  @flat_rate_shipping 500
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -93,7 +91,13 @@ defmodule LiveStoreWeb.ShopLive.Cart do
               <span>Total</span>
               <span>{money(@sub_total + @shipping)}</span>
             </div>
-            <.button patch={~p"/cart/checkout"} class="btn btn-primary w-full mt-6">Checkout</.button>
+            <.button
+              patch={~p"/cart/checkout"}
+              disabled={@cart.items == []}
+              class="btn btn-primary w-full mt-6"
+            >
+              Checkout
+            </.button>
           </div>
         </div>
       </div>
@@ -119,7 +123,10 @@ defmodule LiveStoreWeb.ShopLive.Cart do
      socket
      |> assign(:cart, cart)
      |> assign(:sub_total, Store.calculate_total(cart))
-     |> assign(:shipping, @flat_rate_shipping)
+     |> assign(
+       :shipping,
+       (cart.items == [] && 0) || Application.get_env(:live_store, :shipping_cost)
+     )
      |> assign(:stripe_public_key, Application.get_env(:live_store, :stripe_public_key))
      |> assign(:client_secret, nil)}
   end
@@ -160,8 +167,10 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
   defp update_items(socket, items) do
     cart = %Cart{socket.assigns.cart | items: items}
+    shipping = if items == [], do: 0, else: Application.get_env(:live_store, :shipping_cost)
 
-    {:noreply, assign(socket, cart: cart, sub_total: Store.calculate_total(cart))}
+    {:noreply,
+     assign(socket, cart: cart, sub_total: Store.calculate_total(cart), shipping: shipping)}
   end
 
   defp image_path(%CartItem{

@@ -23,8 +23,27 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
           </span>
         </div>
         <div>
-          <h3 class="font-semibold text-lg">Total</h3>
-          <p class="font-mono">{money(@order.total)}</p>
+          <h3 class="font-semibold text-lg mb-2">Order Summary</h3>
+          <div class="bg-base-200/20 rounded-lg p-3 space-y-1 max-w-xs sm:max-w-xs">
+            <div class="flex justify-between text-sm">
+              <span class="opacity-80">Subtotal</span>
+              <span class="font-mono">
+                {money(@order.total - @order.amount_shipping - @order.amount_tax)}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="opacity-80">Shipping</span>
+              <span class="font-mono">{money(@order.amount_shipping)}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="opacity-80">Tax</span>
+              <span class="font-mono">{money(@order.amount_tax)}</span>
+            </div>
+            <div class="border-t border-base-300 pt-2 flex justify-between items-center">
+              <span class="font-semibold text-lg">Order Total</span>
+              <span class="font-mono text-xl font-bold">{money(@order.total)}</span>
+            </div>
+          </div>
         </div>
         <div>
           <h3 class="font-semibold text-lg">Payment Reference</h3>
@@ -59,7 +78,7 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
         </:col>
         <:col :let={item} label="SKU">{item.variant.sku}</:col>
         <:col :let={item} label="Quantity">{item.quantity}</:col>
-        <:col :let={item} label="Subtotal">{money(item.price)}</:col>
+        <:col :let={item} label="Subtotal">{money(item.price * item.quantity)}</:col>
       </.table>
     </div>
     """

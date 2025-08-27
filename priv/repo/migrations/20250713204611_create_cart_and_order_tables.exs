@@ -28,6 +28,8 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
     create table(:orders) do
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :total, :integer
+      add :amount_shipping, :integer
+      add :amount_tax, :integer
       add :stripe_id, :string
       add :tracking_number, :string
       add :status, :string

@@ -33,6 +33,8 @@ config :live_store,
 
 config :live_store, :store_email, System.get_env("STORE_EMAIL", "contact@example.com")
 
+config :live_store, :shipping_cost, System.get_env("SHIPPING_COST", "500") |> String.to_integer()
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

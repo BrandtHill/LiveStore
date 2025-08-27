@@ -1,18 +1,7 @@
 defmodule LiveStore.Stripe do
   alias LiveStore.Accounts.User
-  alias LiveStore.Store
   alias LiveStore.Store.Cart
-  alias Stripe.PaymentIntent
   alias Stripe.Checkout.Session
-
-  def create_payment_intent(%Cart{} = cart) do
-    PaymentIntent.create(%{
-      amount: Store.calculate_total(cart),
-      currency: "usd",
-      payment_method_types: ["card"],
-      metadata: %{"cart_id" => cart.id}
-    })
-  end
 
   def create_checkout_session(%Cart{} = cart) do
     line_items =
@@ -22,7 +11,7 @@ defmodule LiveStore.Stripe do
             currency: "usd",
             product_data: %{
               name: i.variant.product.name,
-              description: i.variant.product.description
+              description: "SKU: #{i.variant.sku}"
             },
             unit_amount: i.variant.price_override || i.variant.product.price
           },
@@ -56,21 +45,9 @@ defmodule LiveStore.Stripe do
       shipping_options: [
         %{
           shipping_rate_data: %{
-            display_name: "Flat rate USPS",
+            display_name: "Flat rate",
             fixed_amount: %{
-              amount: 500,
-              currency: "usd"
-            },
-            tax_behavior: "exclusive",
-            tax_code: "txcd_92010001",
-            type: "fixed_amount"
-          }
-        },
-        %{
-          shipping_rate_data: %{
-            display_name: "Flat rate UPS",
-            fixed_amount: %{
-              amount: 800,
+              amount: Application.get_env(:live_store, :shipping_cost),
               currency: "usd"
             },
             tax_behavior: "exclusive",

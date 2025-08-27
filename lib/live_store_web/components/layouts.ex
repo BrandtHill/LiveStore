@@ -42,7 +42,7 @@ defmodule LiveStoreWeb.Layouts do
       <div class="px-4 h-full flex items-center justify-between">
         <div class="flex gap-2">
           <a class="flex items-center gap-2" href="/">
-            <.icon name="hero-building-storefront" class="w-8 h-8 text-red-400" />
+            <.icon name="hero-building-storefront" class="w-10 h-10 text-primary" />
             <div class="font-semibold text-xl">{Application.get_env(:live_store, :store_name)}</div>
           </a>
 
