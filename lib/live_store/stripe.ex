@@ -47,7 +47,7 @@ defmodule LiveStore.Stripe do
           shipping_rate_data: %{
             display_name: "Flat rate",
             fixed_amount: %{
-              amount: Application.get_env(:live_store, :shipping_cost),
+              amount: LiveStore.Config.shipping_cost(),
               currency: "usd"
             },
             tax_behavior: "exclusive",

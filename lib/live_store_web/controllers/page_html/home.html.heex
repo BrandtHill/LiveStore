@@ -1,7 +1,7 @@
 <Layouts.app {assigns}>
   <div class="relative h-240 text-white">
     <img
-      src="https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=3540&q=80"
+      src={LiveStore.Config.background_image()}
       alt="Invokes the desire to shop"
       class="grayscale-[70%] fixed inset-0 w-full h-full object-cover"
     />
@@ -11,11 +11,10 @@
     <section class="relative h-160 flex flex-col items-center justify-center text-center px-6 z-10">
       <div class="max-w-6xl">
         <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold drop-shadow-lg">
-          Welcome to
-          <span class="text-primary">{Application.get_env(:live_store, :store_name)}</span>
+          Welcome to <span class="text-primary">{LiveStore.Config.store_name()}</span>
         </h1>
         <h4 class="mt-6 text-xl md:text-2xl opacity-80 drop-shadow-xl">
-          {Application.get_env(:live_store, :store_subtitle)}
+          {LiveStore.Config.store_subtitle()}
         </h4>
         <div class="mt-10 flex justify-center">
           <.link href={~p"/products"} class="btn btn-primary btn-xl rounded-xl text-lg">

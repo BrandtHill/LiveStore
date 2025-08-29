@@ -16,15 +16,16 @@ defmodule LiveStoreWeb.UserLive.Settings do
         </div>
 
         <div>
-          <.button href={~p"/account/logout"} method="delete">
+          <.button variant="primary" href={~p"/account/logout"} method="delete">
             Log out
           </.button>
         </div>
 
         <div class="divider" />
+
         <div>
-          <.button navigate={~p"/account/orders"}>
-            Orders
+          <.button variant="primary" navigate={~p"/account/orders"}>
+            My Orders
           </.button>
         </div>
 

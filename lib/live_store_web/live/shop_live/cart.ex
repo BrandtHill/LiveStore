@@ -125,7 +125,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
      |> assign(:sub_total, Store.calculate_total(cart))
      |> assign(
        :shipping,
-       (cart.items == [] && 0) || Application.get_env(:live_store, :shipping_cost)
+       (cart.items == [] && 0) || LiveStore.Config.shipping_cost()
      )
      |> assign(:stripe_public_key, Application.get_env(:live_store, :stripe_public_key))
      |> assign(:client_secret, nil)}

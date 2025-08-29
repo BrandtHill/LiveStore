@@ -167,7 +167,7 @@ defmodule LiveStoreWeb.Admin.ProductLive.Form do
      |> assign(:attribute_types, product.attribute_types)
      |> assign(:all_images, all_images)
      |> assign(:deleted_image_ids, [])
-     |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20)
+     |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20, max_file_size: 20_000_000)
      |> assign_new(:form, fn ->
        to_form(Store.change_product(product))
      end), temporary_assigns: [form: nil]}

@@ -7,6 +7,8 @@ defmodule LiveStore.Application do
 
   @impl true
   def start(_type, _args) do
+    LiveStore.Config.init_table()
+
     children = [
       LiveStoreWeb.Telemetry,
       LiveStore.Repo,

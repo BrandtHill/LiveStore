@@ -32,7 +32,10 @@ defmodule LiveStoreWeb.Router do
     end
 
     scope "/admin", Admin do
-      live_session :product_admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
+      live_session :admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
+        live "/", Index, :index
+        live "/settings", Settings, :edit
+
         live "/products", ProductLive.Index, :index
         live "/products/new", ProductLive.Form, :new
         live "/products/:id/edit", ProductLive.Form, :edit
@@ -42,9 +45,7 @@ defmodule LiveStoreWeb.Router do
         live "/products/:id/variants", VariantLive.Index, :index
         live "/products/:id/variants/new", VariantLive.Form, :new
         live "/products/:id/variants/:variant_id/edit", VariantLive.Form, :edit
-      end
 
-      live_session :orders_admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
         live "/orders", OrderLive.Index, :index
       end
     end

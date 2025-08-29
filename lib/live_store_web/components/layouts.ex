@@ -43,7 +43,7 @@ defmodule LiveStoreWeb.Layouts do
         <div class="flex gap-2">
           <a class="flex items-center gap-2" href="/">
             <.icon name="hero-building-storefront" class="w-10 h-10 text-primary" />
-            <div class="font-semibold text-xl">{Application.get_env(:live_store, :store_name)}</div>
+            <div class="font-semibold text-xl">{LiveStore.Config.store_name()}</div>
           </a>
 
           <.link
@@ -73,18 +73,10 @@ defmodule LiveStoreWeb.Layouts do
           >
             <.link
               :if={@current_user && @current_user.admin}
-              navigate={~p"/admin/orders"}
+              navigate={~p"/admin"}
               class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
             >
-              <.icon name="hero-wrench" /> Orders
-            </.link>
-
-            <.link
-              :if={@current_user && @current_user.admin}
-              navigate={~p"/admin/products"}
-              class="px-3 py-2 rounded hover:bg-base-200 flex items-center gap-1 w-full md:w-max"
-            >
-              <.icon name="hero-wrench" /> Products
+              <.icon name="hero-wrench" /> Admin
             </.link>
 
             <.link

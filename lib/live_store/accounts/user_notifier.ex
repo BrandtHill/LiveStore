@@ -10,10 +10,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from(
-        {Application.get_env(:live_store, :store_name),
-         Application.get_env(:live_store, :store_email)}
-      )
+      |> from({LiveStore.Config.store_name(), LiveStore.Config.store_email()})
       |> subject(subject)
       |> html_body(body)
 
