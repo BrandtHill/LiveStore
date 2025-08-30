@@ -30,18 +30,15 @@ defmodule LiveStoreWeb.Admin.Settings do
             label="Store Email"
             placeholder={@defaults[:store_email]}
           />
-          <.input field={@form[:shipping_cost]} label="Shipping Cost" type="number" />
-          <i>{money(@form[:shipping_cost].value)}</i>
-
-          <div class="py-4">
-            <.label>Background Image</.label>
-            <.live_file_input upload={@uploads.background_image} class="custom-file-input" />
-            <.live_img_preview
-              :for={entry <- @uploads.background_image.entries}
-              entry={entry}
-              class="aspect-4/3 object-cover rounded-lg"
-            />
+          <div class="flex items-center">
+            <div class="w-32">
+              <.input field={@form[:shipping_cost]} label="Shipping Cost" type="number" />
+            </div>
+            <b class="pt-3 px-2">{money(@form[:shipping_cost].value)}</b>
           </div>
+
+          <.image_upload label="Favicon" key={:favicon} {assigns} />
+          <.image_upload label="Background Image" key={:background_image} {assigns} />
 
           <.button phx-disable-with="Saving..." variant="primary">Save</.button>
           <.button navigate={~p"/admin"}>Cancel</.button>
@@ -51,53 +48,112 @@ defmodule LiveStoreWeb.Admin.Settings do
     """
   end
 
+  def image_upload(assigns) do
+    ~H"""
+    <div class="py-4">
+      <.label>{@label}</.label>
+
+      <% upload = @uploads[@key] %>
+      <% current = @config[@key] %>
+      <% default = @defaults[@key] %>
+
+      <.live_file_input upload={upload} class="custom-file-input" />
+
+      <div class="max-w-xs">
+        <%= cond do %>
+          <% upload.entries != [] -> %>
+            <.live_img_preview entry={hd(upload.entries)} class="object-cover rounded-lg" />
+            <.button type="button" value={@key} phx-click="cancel_img">✕</.button>
+          <% current in [nil, default] or @key in @deleted_images -> %>
+            <.label>Default {@label}</.label>
+            <img class="object-cover rounded-lg" src={default} />
+          <% true -> %>
+            <.label>Current {@label}</.label>
+            <img class="object-cover rounded-lg" src={current} />
+            <.button type="button" value={@key} phx-click="remove_img">✕</.button>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
   @impl true
   def mount(_params, _session, socket) do
+    config = Config.config()
+
     {:ok,
      socket
      |> assign(
        page_title: "Store Settings",
-       form: to_form(Config.get_all_for_form(), as: :settings),
-       defaults: Config.get_defaults()
+       form: to_form(Config.changeset(config), as: :settings),
+       deleted_images: [],
+       config: config,
+       defaults: Config.defaults()
      )
      |> allow_upload(:background_image,
        accept: ~w(image/*),
        max_entries: 1,
        max_file_size: 20_000_000
+     )
+     |> allow_upload(:favicon,
+       accept: ~w(image/*),
+       max_entries: 1,
+       max_file_size: 10_000_000
      )}
   end
 
   @impl true
   def handle_event("validate", %{"settings" => params}, socket) do
-    {:noreply, assign(socket, :form, to_form(params, as: :settings))}
+    changeset =
+      Config.changeset(socket.assigns.config, params) |> IO.inspect(label: "Validate Changeset")
+
+    {:noreply, assign(socket, :form, to_form(changeset, as: :settings, action: :validate))}
   end
 
-  @impl true
   def handle_event("save", %{"settings" => params}, socket) do
-    background_image =
-      case consume_uploaded_entries(socket, :background_image, fn %{path: path}, entry ->
-             random = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
-             dest = LiveStore.Store.Image.full_path("#{random}__#{entry.client_name}")
-             File.cp!(path, dest)
-             {:ok, Path.basename(dest)}
-           end) do
-        [basename] -> "/uploads/#{basename}"
-        _ -> nil
-      end
+    params =
+      [:background_image, :favicon]
+      |> Map.new(fn key ->
+        image =
+          if (path = save_image(socket, key)) || key in socket.assigns.deleted_images,
+            do: path,
+            else: socket.assigns.config[key]
 
-    shipping_cost =
-      try do
-        String.to_integer(params["shipping_cost"])
-      rescue
-        _ -> nil
-      end
+        {"#{key}", image}
+      end)
+      |> Map.merge(params)
+      |> IO.inspect(label: "Save Params")
 
-    Config.store_name(params["store_name"])
-    Config.store_subtitle(params["store_subtitle"])
-    Config.store_email(params["store_email"])
-    Config.shipping_cost(shipping_cost)
-    Config.background_image(background_image)
+    socket.assigns.config
+    |> Config.changeset(params)
+    |> Config.update()
 
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> put_flash(:info, "Site settings saved successfully")
+     |> push_navigate(to: ~p"/admin")}
+  end
+
+  def handle_event("remove_img", %{"value" => key} = params, socket) do
+    key = String.to_existing_atom(key)
+    {:noreply, update(socket, :deleted_images, fn images -> [key | images] end)}
+  end
+
+  def handle_event("cancel_img", %{"value" => key} = params, socket) do
+    key = String.to_existing_atom(key)
+    [%{ref: ref}] = socket.assigns.uploads[key].entries
+    {:noreply, cancel_upload(socket, key, ref)}
+  end
+
+  defp save_image(socket, key) do
+    case consume_uploaded_entries(socket, key, fn %{path: path}, entry ->
+           random = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
+           dest = LiveStore.Store.Image.full_path("#{random}__#{entry.client_name}")
+           File.cp!(path, dest)
+           {:ok, Path.basename(dest)}
+         end) do
+      [basename] -> "/uploads/#{basename}"
+      _ -> nil
+    end
   end
 end
