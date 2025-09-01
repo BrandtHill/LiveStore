@@ -30,7 +30,8 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
       add :total, :integer
       add :amount_shipping, :integer
       add :amount_tax, :integer
-      add :stripe_id, :string
+      add :stripe_checkout_id, :string
+      add :stripe_payment_id, :string
       add :tracking_number, :string
       add :status, :string
       add :shipping_details, :map
@@ -40,7 +41,8 @@ defmodule LiveStore.Repo.Migrations.CreateCartAndOrderTables do
 
     create index(:orders, [:user_id, :inserted_at])
     create index(:orders, [:status, :inserted_at])
-    create unique_index(:orders, [:stripe_id])
+    create unique_index(:orders, [:stripe_checkout_id])
+    create unique_index(:orders, [:stripe_payment_id])
     create unique_index(:orders, [:tracking_number])
 
     create table(:order_items) do

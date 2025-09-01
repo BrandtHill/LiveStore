@@ -47,6 +47,7 @@ defmodule LiveStoreWeb.Router do
         live "/products/:id/variants/:variant_id/edit", VariantLive.Form, :edit
 
         live "/orders", OrderLive.Index, :index
+        live "/orders/:id", OrderLive.Show, :show
       end
     end
   end

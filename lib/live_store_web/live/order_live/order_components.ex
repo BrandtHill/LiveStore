@@ -47,7 +47,7 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
         </div>
         <div>
           <h3 class="font-semibold text-lg">Payment Reference</h3>
-          <p class="text-sm opacity-80">{@order.stripe_id}</p>
+          <p class="text-sm opacity-80">{@order.stripe_payment_id}</p>
         </div>
       </div>
 

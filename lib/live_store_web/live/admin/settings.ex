@@ -32,7 +32,12 @@ defmodule LiveStoreWeb.Admin.Settings do
           />
           <div class="flex items-center">
             <div class="w-32">
-              <.input field={@form[:shipping_cost]} label="Shipping Cost" type="number" />
+              <.input
+                field={@form[:shipping_cost]}
+                label="Shipping Cost"
+                type="number"
+                placeholder={@defaults[:shipping_cost]}
+              />
             </div>
             <b class="pt-3 px-2">{money(@form[:shipping_cost].value)}</b>
           </div>
@@ -104,8 +109,7 @@ defmodule LiveStoreWeb.Admin.Settings do
 
   @impl true
   def handle_event("validate", %{"settings" => params}, socket) do
-    changeset =
-      Config.changeset(socket.assigns.config, params) |> IO.inspect(label: "Validate Changeset")
+    changeset = Config.changeset(socket.assigns.config, params)
 
     {:noreply, assign(socket, :form, to_form(changeset, as: :settings, action: :validate))}
   end
@@ -122,7 +126,6 @@ defmodule LiveStoreWeb.Admin.Settings do
         {"#{key}", image}
       end)
       |> Map.merge(params)
-      |> IO.inspect(label: "Save Params")
 
     socket.assigns.config
     |> Config.changeset(params)
@@ -134,12 +137,12 @@ defmodule LiveStoreWeb.Admin.Settings do
      |> push_navigate(to: ~p"/admin")}
   end
 
-  def handle_event("remove_img", %{"value" => key} = params, socket) do
+  def handle_event("remove_img", %{"value" => key}, socket) do
     key = String.to_existing_atom(key)
     {:noreply, update(socket, :deleted_images, fn images -> [key | images] end)}
   end
 
-  def handle_event("cancel_img", %{"value" => key} = params, socket) do
+  def handle_event("cancel_img", %{"value" => key}, socket) do
     key = String.to_existing_atom(key)
     [%{ref: ref}] = socket.assigns.uploads[key].entries
     {:noreply, cancel_upload(socket, key, ref)}

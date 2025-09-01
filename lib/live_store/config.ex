@@ -60,7 +60,7 @@ defmodule LiveStore.Config do
     def unquote(key)(), do: get(unquote(key), unquote(default))
   end
 
-  def config, do: Map.merge(@config_defaults, Map.new(:ets.tab2list(@table)))
+  def config, do: Map.new(:ets.tab2list(@table))
   def defaults, do: @config_defaults
 
   def changeset(config, params \\ %{}) do
@@ -70,8 +70,7 @@ defmodule LiveStore.Config do
   end
 
   def update(changeset) do
-    changeset
-    |> apply_changes()
+    changeset.changes
     |> Enum.to_list()
     |> bulk_insert()
   end

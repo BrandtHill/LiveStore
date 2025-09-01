@@ -30,9 +30,12 @@ defmodule LiveStoreWeb.Admin.ProductLive.Form do
             label="Description"
             phx-hook="ResizeableTextarea"
           />
-          <.input field={@form[:price]} type="number" label="Price" phx-debounce="0" />
-          <i>{money(@form[:price].value)}</i>
-
+          <div class="flex items-center">
+            <div class="w-32">
+              <.input field={@form[:price]} type="number" label="Price" phx-debounce="0" />
+            </div>
+            <b class="pt-3 px-2">{money(@form[:price].value)}</b>
+          </div>
           <div class="mt-4 space-y-4">
             <input
               :if={@attribute_types == []}

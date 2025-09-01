@@ -22,9 +22,17 @@ defmodule LiveStoreWeb.Admin.VariantLive.Form do
         >
           <.input field={@form[:sku]} type="text" label="SKU" />
           <.input field={@form[:stock]} type="number" label="Stock" />
-          <.input field={@form[:price_override]} type="number" label="Price Override" />
-          <i>{money(@form[:price_override].value)}</i>
-
+          <div class="flex items-center">
+            <div class="w-32">
+              <.input
+                field={@form[:price_override]}
+                type="number"
+                label="Price Override"
+                phx-debounce="0"
+              />
+            </div>
+            <b class="pt-3 px-2">{money(@form[:price_override].value)}</b>
+          </div>
           <.inputs_for :let={attr} field={@form[:attributes]}>
             <.input hidden field={attr[:type]} />
             <.input

@@ -19,11 +19,12 @@ defmodule LiveStore.Store.Order do
     field :total, :integer
     field :amount_shipping, :integer
     field :amount_tax, :integer
-    field :stripe_id, :string
+    field :stripe_checkout_id, :string
+    field :stripe_payment_id, :string
     field :tracking_number, :string
 
     field :status, Ecto.Enum,
-      values: [:processing, :canceled, :shipped, :complete, :refunded],
+      values: [:processing, :shipped, :complete, :canceled, :refunded],
       default: :processing
 
     embeds_one :shipping_details, ShippingDetails
@@ -31,7 +32,15 @@ defmodule LiveStore.Store.Order do
     timestamps()
   end
 
-  @required_fields [:status, :total, :stripe_id, :user_id, :amount_shipping, :amount_tax]
+  @required_fields [
+    :status,
+    :total,
+    :stripe_checkout_id,
+    :stripe_payment_id,
+    :user_id,
+    :amount_shipping,
+    :amount_tax
+  ]
   @allowed_fields @required_fields ++ [:tracking_number]
 
   @doc false
@@ -45,7 +54,12 @@ defmodule LiveStore.Store.Order do
     |> validate_number(:amount_shipping, greater_than_or_equal_to: 0)
     |> validate_number(:amount_tax, greater_than_or_equal_to: 0)
     |> foreign_key_constraint(:user_id)
-    |> unique_constraint(:stripe_id)
+    |> unique_constraint(:stripe_checkout_id)
+    |> unique_constraint(:stripe_payment_id)
     |> unique_constraint(:tracking_number)
+  end
+
+  def statuses do
+    Ecto.Enum.values(__MODULE__, :status)
   end
 end
