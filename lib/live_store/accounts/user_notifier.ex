@@ -48,4 +48,14 @@ defmodule LiveStore.Accounts.UserNotifier do
 
     deliver(user.email, "Order Confirmation", html)
   end
+
+  @doc """
+  Deliver email after an order status changed to `:shipped`.
+  """
+  def deliver_order_shipped(%User{} = user, order) do
+    template = Emails.order_shipped(%{order: order})
+    html = Emails.heex_to_html(template)
+
+    deliver(user.email, "Order Shipped", html)
+  end
 end

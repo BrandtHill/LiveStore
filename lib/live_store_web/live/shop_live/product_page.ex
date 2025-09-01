@@ -67,12 +67,25 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
             </span>
           </div>
 
-          <.button
-            :if={@selected_variant && @selected_variant.stock > 0}
-            phx-click="add_to_cart"
-          >
-            Add to Cart
-          </.button>
+          <div class="flex space-x-4">
+            <.button
+              :if={@selected_variant && @selected_variant.stock > 0}
+              phx-click="add_to_cart"
+            >
+              Add to Cart
+            </.button>
+
+            <.link
+              class={[
+                "btn btn-soft btn-primary transition-all duration-500 ease-in-out",
+                (@added_to_cart && "opacity-100 scale-100") ||
+                  "opacity-0 scale-95 pointer-events-none"
+              ]}
+              navigate={~p"/cart"}
+            >
+              Checkout Now
+            </.link>
+          </div>
         </div>
       </div>
     </Layouts.app>
@@ -92,6 +105,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
       |> assign(:index, 0)
       |> assign(:product, product)
       |> assign(:selected_variant, nil)
+      |> assign(:added_to_cart, false)
       |> assign(:attribute_map, attribute_map)
       |> assign(:selected_attributes, selected_attributes)
 
@@ -167,7 +181,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
         items ++ [item]
       end
 
-    {:noreply, assign(socket, :cart, %{socket.assigns.cart | items: items})}
+    {:noreply, assign(socket, cart: %{socket.assigns.cart | items: items}, added_to_cart: true)}
   end
 
   defp create_attribute_map(variants, selected_attributes) do

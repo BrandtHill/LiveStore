@@ -7,7 +7,7 @@ defmodule LiveStore.Store do
 
   alias LiveStore.Accounts
   alias LiveStore.Accounts.User
-  # alias LiveStore.Accounts.UserNotifier
+  alias LiveStore.Accounts.UserNotifier
   alias LiveStore.Repo
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Cart
@@ -261,18 +261,23 @@ defmodule LiveStore.Store do
       |> Order.changeset()
       |> Repo.insert()
     end)
+    |> then(fn {:ok, order} ->
+      order = preload_order(order)
+      Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
+      {:ok, order}
+    end)
   end
 
   def get_order(id) do
     Order
     |> Repo.get(id)
-    |> Repo.preload(items: [variant: [product: :images]])
+    |> Repo.preload(items: [variant: :product])
   end
 
   def get_order_by_stripe_checkout_id(stripe_id) do
     Order
     |> Repo.get_by(stripe_checkout_id: stripe_id)
-    |> Repo.preload(items: [variant: [product: :images]])
+    |> Repo.preload(items: [variant: :product])
   end
 
   def get_orders_by_user(%User{id: user_id}) do
@@ -293,10 +298,20 @@ defmodule LiveStore.Store do
     )
   end
 
+  defp preload_order(%Order{} = order) do
+    Repo.preload(order, [:user, items: [variant: :product]])
+  end
+
   def set_order_tracking_number(%Order{status: :processing} = order, tracking_number) do
-    order
-    |> Order.changeset(%{tracking_number: tracking_number, status: :shipped})
-    |> Repo.update()
+    {:ok, order} =
+      order
+      |> Order.changeset(%{tracking_number: tracking_number, status: :shipped})
+      |> Repo.update()
+
+    order = preload_order(order)
+    UserNotifier.deliver_order_shipped(order.user, order)
+
+    {:ok, order}
   end
 
   def set_order_tracking_number(%Order{} = order, tracking_number) do
