@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.Admin.OrderLive.Index do
+defmodule LiveStoreWeb.AdminLive.Order.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStoreWeb.OrderLive.OrderComponents

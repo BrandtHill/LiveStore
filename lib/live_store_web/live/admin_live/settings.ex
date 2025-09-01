@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.Admin.Settings do
+defmodule LiveStoreWeb.AdminLive.Settings do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Config

@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.Admin.OrderLive.Show do
+defmodule LiveStoreWeb.AdminLive.Order.Show do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store

@@ -31,23 +31,23 @@ defmodule LiveStoreWeb.Router do
       live "/order/success", OrderLive.Success
     end
 
-    scope "/admin", Admin do
+    scope "/admin", AdminLive do
       live_session :admin, on_mount: [{LiveStoreWeb.UserAuth, :require_admin}] do
         live "/", Index, :index
         live "/settings", Settings, :edit
 
-        live "/products", ProductLive.Index, :index
-        live "/products/new", ProductLive.Form, :new
-        live "/products/:id/edit", ProductLive.Form, :edit
+        live "/products", Product.Index, :index
+        live "/products/new", Product.Form, :new
+        live "/products/:id/edit", Product.Form, :edit
 
-        live "/products/:id", ProductLive.Show, :show
+        live "/products/:id", Product.Show, :show
 
-        live "/products/:id/variants", VariantLive.Index, :index
-        live "/products/:id/variants/new", VariantLive.Form, :new
-        live "/products/:id/variants/:variant_id/edit", VariantLive.Form, :edit
+        live "/products/:id/variants", Variant.Index, :index
+        live "/products/:id/variants/new", Variant.Form, :new
+        live "/products/:id/variants/:variant_id/edit", Variant.Form, :edit
 
-        live "/orders", OrderLive.Index, :index
-        live "/orders/:id", OrderLive.Show, :show
+        live "/orders", Order.Index, :index
+        live "/orders/:id", Order.Show, :show
       end
     end
   end

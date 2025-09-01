@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.Admin.Index do
+defmodule LiveStoreWeb.AdminLive.Index do
   use LiveStoreWeb, :live_view
 
   @impl true

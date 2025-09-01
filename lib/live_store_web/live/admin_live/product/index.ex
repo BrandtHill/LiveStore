@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.Admin.ProductLive.Index do
+defmodule LiveStoreWeb.AdminLive.Product.Index do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
