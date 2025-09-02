@@ -47,7 +47,22 @@ defmodule LiveStore.Store.Image do
     changeset
   end
 
-  def full_path(name) do
+  defp full_path(name) do
     Path.join([:code.priv_dir(:live_store), "static", "uploads", name])
+  end
+
+  def save_image(temp_path, name_prefix, image_opts \\ []) do
+    random = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
+    {:ok, image} = Vix.Vips.Image.new_from_file(temp_path)
+    extension = if Vix.Vips.Image.has_alpha?(image), do: "webp", else: "jpg"
+    dest_path = full_path("#{name_prefix}__#{random}.#{extension}")
+
+    Vix.Vips.Image.write_to_file(
+      image,
+      dest_path,
+      [strip: true, access: :sequential] ++ image_opts
+    )
+
+    Path.basename(dest_path)
   end
 end

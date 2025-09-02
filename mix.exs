@@ -64,6 +64,7 @@ defmodule LiveStore.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:money, "~> 1.14"},
+      {:vix, "~> 0.35"},
       {:stripity_stripe, "~> 3.2"}
     ]
   end

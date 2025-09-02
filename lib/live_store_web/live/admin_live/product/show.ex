@@ -53,12 +53,18 @@ defmodule LiveStoreWeb.AdminLive.Product.Show do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(LiveStore.PubSub, "product_images:#{id}")
+    end
+
     {:ok,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, "Show Product")
      |> assign(:product, Store.get_product!(id))}
   end
 
-  defp page_title(:show), do: "Show Product"
-  defp page_title(:edit), do: "Edit Product"
+  @impl true
+  def handle_info({:images, images}, socket) do
+    {:noreply, assign(socket, product: %{socket.assigns.product | images: images})}
+  end
 end

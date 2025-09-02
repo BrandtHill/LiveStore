@@ -299,11 +299,12 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
 
     new_images =
       consume_uploaded_entries(socket, :new_images, fn %{path: path}, entry ->
-        random = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
-        dest = Image.full_path("#{random}__#{entry.client_name}")
-        File.cp!(path, dest)
-        path = Path.basename(dest)
-        {:ok, %{path: path, product_id: product.id, priority: ref_priority_map[entry.ref]}}
+        {:ok,
+         %{
+           path: Image.save_image(path, product.slug),
+           product_id: product.id,
+           priority: ref_priority_map[entry.ref]
+         }}
       end)
 
     existing_images =

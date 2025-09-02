@@ -116,10 +116,10 @@ defmodule LiveStoreWeb.AdminLive.Settings do
 
   def handle_event("save", %{"settings" => params}, socket) do
     params =
-      [:background_image, :favicon]
-      |> Map.new(fn key ->
+      [background_image: [Q: 85], favicon: []]
+      |> Map.new(fn key, image_opts ->
         image =
-          if (path = save_image(socket, key)) || key in socket.assigns.deleted_images,
+          if (path = save_image(socket, key, image_opts)) || key in socket.assigns.deleted_images,
             do: path,
             else: socket.assigns.config[key]
 
@@ -148,12 +148,9 @@ defmodule LiveStoreWeb.AdminLive.Settings do
     {:noreply, cancel_upload(socket, key, ref)}
   end
 
-  defp save_image(socket, key) do
-    case consume_uploaded_entries(socket, key, fn %{path: path}, entry ->
-           random = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
-           dest = LiveStore.Store.Image.full_path("#{random}__#{entry.client_name}")
-           File.cp!(path, dest)
-           {:ok, Path.basename(dest)}
+  defp save_image(socket, key, image_opts) do
+    case consume_uploaded_entries(socket, key, fn %{path: path}, _entry ->
+           {:ok, LiveStore.Store.Image.save_image(path, key, image_opts)}
          end) do
       [basename] -> "/uploads/#{basename}"
       _ -> nil
