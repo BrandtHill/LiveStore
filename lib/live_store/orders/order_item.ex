@@ -1,8 +1,8 @@
-defmodule LiveStore.Store.OrderItem do
+defmodule LiveStore.Orders.OrderItem do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias LiveStore.Store.Order
+  alias LiveStore.Orders.Order
   alias LiveStore.Store.Variant
 
   @primary_key {:id, UUIDv7, autogenerate: true}

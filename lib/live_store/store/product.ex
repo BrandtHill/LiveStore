@@ -2,7 +2,7 @@ defmodule LiveStore.Store.Product do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias LiveStore.Store.Image
+  alias LiveStore.Uploads.Image
   alias LiveStore.Store.Variant
 
   @primary_key {:id, UUIDv7, autogenerate: true}

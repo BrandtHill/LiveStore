@@ -1,11 +1,11 @@
-defmodule LiveStore.Store.Order do
+defmodule LiveStore.Orders.Order do
   use Ecto.Schema
 
   import Ecto.Changeset
 
   alias LiveStore.Accounts.User
-  alias LiveStore.Store.OrderItem
-  alias LiveStore.Store.ShippingDetails
+  alias LiveStore.Orders.OrderItem
+  alias LiveStore.Orders.ShippingDetails
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id

@@ -2,6 +2,7 @@ defmodule LiveStoreWeb.AdminLive.Settings do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Config
+  alias LiveStore.Uploads
 
   @impl true
   def render(assigns) do
@@ -152,7 +153,7 @@ defmodule LiveStoreWeb.AdminLive.Settings do
 
   defp consume_upload(socket, key) do
     case consume_uploaded_entries(socket, key, fn %{path: path}, entry ->
-           {:ok, LiveStore.Store.Image.temp_save_image(path, entry.client_name)}
+           {:ok, Uploads.temp_save_image(path, entry.client_name)}
          end) do
       [basename] -> basename
       [] -> nil
@@ -160,7 +161,7 @@ defmodule LiveStoreWeb.AdminLive.Settings do
   end
 
   defp process_image(path, name, image_opts) do
-    path = LiveStore.Store.Image.process_image(path, name, image_opts)
+    path = Uploads.process_image(path, name, image_opts)
     "/uploads/#{path}"
   end
 end

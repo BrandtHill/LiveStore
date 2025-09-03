@@ -1,8 +1,8 @@
 defmodule LiveStoreWeb.OrderLive.Show do
   use LiveStoreWeb, :live_view
 
-  alias LiveStore.Store
-  alias LiveStore.Store.Order
+  alias LiveStore.Orders
+  alias LiveStore.Orders.Order
 
   alias LiveStoreWeb.OrderLive.OrderComponents
 
@@ -21,7 +21,7 @@ defmodule LiveStoreWeb.OrderLive.Show do
 
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
-    %Order{user_id: user_id} = order = Store.get_order(id)
+    %Order{user_id: user_id} = order = Orders.get_order(id)
 
     if socket.assigns.current_user.id == user_id do
       {:ok, assign(socket, :order, order)}

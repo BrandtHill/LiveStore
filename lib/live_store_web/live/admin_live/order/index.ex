@@ -3,8 +3,8 @@ defmodule LiveStoreWeb.AdminLive.Order.Index do
 
   alias LiveStoreWeb.OrderLive.OrderComponents
 
-  alias LiveStore.Store
-  alias LiveStore.Store.Order
+  alias LiveStore.Orders
+  alias LiveStore.Orders.Order
 
   @impl true
   def render(assigns) do
@@ -39,7 +39,7 @@ defmodule LiveStoreWeb.AdminLive.Order.Index do
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
-       orders: Store.get_orders(:processing),
+       orders: Orders.get_orders(:processing),
        statuses: Order.statuses(),
        status: :processing
      )}
@@ -53,6 +53,6 @@ defmodule LiveStoreWeb.AdminLive.Order.Index do
         _ -> :processing
       end
 
-    {:noreply, assign(socket, status: status, orders: Store.get_orders(status))}
+    {:noreply, assign(socket, status: status, orders: Orders.get_orders(status))}
   end
 end

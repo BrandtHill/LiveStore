@@ -2,7 +2,7 @@ defmodule LiveStoreWeb.AdminLive.Variant.Form do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
-  alias LiveStore.Store.Image
+  alias LiveStore.Uploads.Image
 
   @impl true
   def render(assigns) do

@@ -1,7 +1,7 @@
 defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
   use LiveStoreWeb, :html
 
-  alias LiveStore.Store.Image
+  alias LiveStore.Uploads.Image
   alias LiveStore.Store.Product
 
   def product_card(assigns) do

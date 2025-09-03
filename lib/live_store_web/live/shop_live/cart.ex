@@ -4,7 +4,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   alias LiveStore.Store
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
-  alias LiveStore.Store.Image
+  alias LiveStore.Uploads.Image
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
   alias LiveStore.Stripe

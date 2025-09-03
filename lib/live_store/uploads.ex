@@ -1,53 +1,43 @@
-defmodule LiveStore.Store.Image do
-  use Ecto.Schema
-  import Ecto.Changeset
+defmodule LiveStore.Uploads do
+  @moduledoc """
+  Context for image uploads
+  """
 
-  alias LiveStore.Store.Product
-  alias LiveStore.Store.Variant
+  alias LiveStore.Repo
+  alias LiveStore.Uploads.Image
 
-  @primary_key {:id, UUIDv7, autogenerate: true}
-  @foreign_key_type :binary_id
-  @timestamps_opts type: :utc_datetime_usec
 
-  schema "images" do
-    field :path, :string
-    field :priority, :integer, default: 0
-
-    belongs_to :product, Product
-    has_one :variant, Variant
-
-    timestamps()
+  def insert_image(path) do
+    Repo.insert(Image.changeset(%{path: path}))
   end
 
-  @required_fields [:path, :priority]
+  def bulk_upsert_images(images) do
+    images =
+      Enum.map(
+        images,
+        fn i ->
+          i
+          |> Map.put(:inserted_at, {:placeholder, :timestamp})
+          |> Map.put(:updated_at, {:placeholder, :timestamp})
+          |> Map.put_new_lazy(:id, &UUIDv7.generate/0)
+        end
+      )
 
-  @allowed_fields @required_fields ++ [:product_id]
+    Repo.insert_all(Image, images,
+      returning: true,
+      placeholders: %{timestamp: DateTime.utc_now()},
+      conflict_target: [:id],
+      on_conflict: {:replace_all_except, [:id, :inserted_at]}
+    )
+  end
 
-  @doc false
-  def changeset(image \\ %__MODULE__{}, params) do
+  def delete_image(%Image{} = image) do
     image
-    |> cast(params, @allowed_fields)
-    |> validate_required(@required_fields)
-    |> validate_length(:path, max: 255)
-    |> foreign_key_constraint(:product_id)
-    |> unsafe_validate_unique(:path, LiveStore.Repo)
-    |> unique_constraint(:path)
-    |> prepare_changes(fn
-      %{action: :delete} = c -> delete_file(c)
-      c -> c
-    end)
+    |> Image.changeset(%{})
+    |> Repo.delete()
   end
 
-  defp delete_file(changeset) do
-    changeset
-    |> get_field(:path)
-    |> full_path()
-    |> File.rm()
-
-    changeset
-  end
-
-  defp full_path(name) do
+  def full_path(name) do
     Path.join([:code.priv_dir(:live_store), "static", "uploads", name])
   end
 

@@ -2,8 +2,8 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
-  alias LiveStore.Store.Image
   alias LiveStore.Store.Product
+  alias LiveStore.Uploads
 
   @impl true
   def render(assigns) do
@@ -226,7 +226,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
   def handle_event("delete_img", %{"id" => id}, socket) do
     socket.assigns.product.images
     |> Enum.find(&(&1.id == id))
-    |> Store.delete_image()
+    |> Uploads.delete_image()
 
     all_images =
       socket.assigns.all_images
@@ -289,7 +289,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
 
   defp consume_new_images(socket) do
     consume_uploaded_entries(socket, :new_images, fn %{path: path}, entry ->
-      {:ok, {entry.ref, Image.temp_save_image(path, entry.client_name)}}
+      {:ok, {entry.ref, Uploads.temp_save_image(path, entry.client_name)}}
     end)
   end
 
@@ -298,7 +298,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
 
     new_images =
       new_images
-      |> Task.async_stream(fn {ref, path} -> {ref, Image.process_image(path, slug)} end)
+      |> Task.async_stream(fn {ref, path} -> {ref, Uploads.process_image(path, slug)} end)
       |> Enum.map(fn {:ok, {ref, path}} ->
         %{
           path: path,
@@ -319,7 +319,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
         }
       end)
 
-    {_, images} = Store.bulk_upsert_images(new_images ++ existing_images)
+    {_, images} = Uploads.bulk_upsert_images(new_images ++ existing_images)
     Phoenix.PubSub.broadcast(LiveStore.PubSub, "product_images:#{product_id}", {:images, images})
     images
   end

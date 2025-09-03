@@ -1,8 +1,8 @@
 defmodule LiveStoreWeb.OrderLive.OrderComponents do
   use LiveStoreWeb, :html
 
-  alias LiveStore.Store.Order
-  alias LiveStore.Store.OrderItem
+  alias LiveStore.Orders.Order
+  alias LiveStore.Orders.OrderItem
 
   def large_card(assigns) do
     ~H"""

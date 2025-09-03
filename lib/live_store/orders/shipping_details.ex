@@ -1,4 +1,4 @@
-defmodule LiveStore.Store.ShippingDetails do
+defmodule LiveStore.Orders.ShippingDetails do
   use Ecto.Schema
   import Ecto.Changeset
 

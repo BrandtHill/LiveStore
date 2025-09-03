@@ -1,7 +1,7 @@
 defmodule LiveStoreWeb.AdminLive.Order.Show do
   use LiveStoreWeb, :live_view
 
-  alias LiveStore.Store
+  alias LiveStore.Orders
 
   @impl true
   def render(assigns) do
@@ -103,7 +103,7 @@ defmodule LiveStoreWeb.AdminLive.Order.Show do
 
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
-    order = Store.get_order(id)
+    order = Orders.get_order(id)
     {:ok, assign(socket, order: order, tracking_number: order.tracking_number)}
   end
 
@@ -113,7 +113,7 @@ defmodule LiveStoreWeb.AdminLive.Order.Show do
   end
 
   def handle_event("save", %{"tracking_number" => tracking_number}, socket) do
-    {:ok, order} = Store.set_order_tracking_number(socket.assigns.order, tracking_number)
+    {:ok, order} = Orders.set_order_tracking_number(socket.assigns.order, tracking_number)
 
     {:noreply, assign(socket, order: order, tracking_number: tracking_number)}
   end

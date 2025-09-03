@@ -4,7 +4,7 @@ defmodule LiveStore.Store.Variant do
 
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Product
-  alias LiveStore.Store.Image
+  alias LiveStore.Uploads.Image
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
