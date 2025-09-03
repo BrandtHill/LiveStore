@@ -6,7 +6,6 @@ defmodule LiveStore.Uploads do
   alias LiveStore.Repo
   alias LiveStore.Uploads.Image
 
-
   def insert_image(path) do
     Repo.insert(Image.changeset(%{path: path}))
   end
