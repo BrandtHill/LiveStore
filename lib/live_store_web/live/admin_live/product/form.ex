@@ -170,7 +170,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
      |> assign(:attribute_types, product.attribute_types)
      |> assign(:all_images, all_images)
      |> assign(:deleted_image_ids, [])
-     |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20, max_file_size: 20_000_000)
+     |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20, max_file_size: 25_000_000)
      |> assign_new(:form, fn ->
        to_form(Store.change_product(product))
      end), temporary_assigns: [form: nil]}
@@ -271,13 +271,14 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
   defp save_product(socket, product_params) do
     case Store.upsert_product(socket.assigns.product, product_params) do
       {:ok, product} ->
-        _images = upsert_images(socket, product)
+        new_images = consume_new_images(socket)
+        all_images = socket.assigns.all_images
+        Task.start(fn -> upsert_images(all_images, new_images, product) end)
 
         action_string = (socket.assigns.live_action == :new && "created") || "updated"
 
         {:noreply,
          socket
-         |> assign(:all_images, [])
          |> put_flash(:info, "Product #{action_string} successfully")
          |> push_navigate(to: socket.assigns.return_path)}
 
@@ -286,35 +287,40 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
     end
   end
 
-  defp upsert_images(socket, product) do
-    ref_priority_map =
-      socket.assigns.all_images
-      |> Enum.filter(& &1.ref)
-      |> Map.new(&{&1.ref, &1.priority})
+  defp consume_new_images(socket) do
+    consume_uploaded_entries(socket, :new_images, fn %{path: path}, entry ->
+      {:ok, {entry.ref, Image.temp_save_image(path, entry.client_name)}}
+    end)
+  end
 
-    id_priority_map =
-      socket.assigns.all_images
-      |> Enum.filter(& &1.id)
-      |> Map.new(&{&1.id, &1.priority})
+  defp upsert_images(all_images, new_images, %Product{slug: slug, id: product_id}) do
+    priority_map = Map.new(all_images, fn %{id: i, ref: r, priority: p} -> {i || r, p} end)
 
     new_images =
-      consume_uploaded_entries(socket, :new_images, fn %{path: path}, entry ->
-        {:ok,
-         %{
-           path: Image.save_image(path, product.slug),
-           product_id: product.id,
-           priority: ref_priority_map[entry.ref]
-         }}
+      new_images
+      |> Task.async_stream(fn {ref, path} -> {ref, Image.process_image(path, slug)} end)
+      |> Enum.map(fn {:ok, {ref, path}} ->
+        %{
+          path: path,
+          product_id: product_id,
+          priority: priority_map[ref]
+        }
       end)
 
     existing_images =
-      socket.assigns.all_images
+      all_images
       |> Enum.filter(& &1.id)
       |> Enum.map(fn i ->
-        %{id: i.id, path: i.path, product_id: product.id, priority: id_priority_map[i.id]}
+        %{
+          id: i.id,
+          path: i.path,
+          product_id: product_id,
+          priority: priority_map[i.id]
+        }
       end)
 
     {_, images} = Store.bulk_upsert_images(new_images ++ existing_images)
+    Phoenix.PubSub.broadcast(LiveStore.PubSub, "product_images:#{product_id}", {:images, images})
     images
   end
 end

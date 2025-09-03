@@ -65,6 +65,9 @@ defmodule LiveStoreWeb.AdminLive.Product.Show do
 
   @impl true
   def handle_info({:images, images}, socket) do
-    {:noreply, assign(socket, product: %{socket.assigns.product | images: images})}
+    {:noreply,
+     socket
+     |> assign(product: %{socket.assigns.product | images: images})
+     |> put_flash(:info, "New images successfully processed")}
   end
 end
