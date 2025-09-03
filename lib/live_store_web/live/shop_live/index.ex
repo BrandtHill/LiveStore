@@ -13,7 +13,7 @@ defmodule LiveStoreWeb.ShopLive.Index do
         Shop!
       </.header>
 
-      <div class="my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center gap-4 px-4">
+      <div class="xl:mx-12 my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center gap-4 px-4">
         <.product_card :for={{_id, product} <- @streams.products} product={product} />
       </div>
     </Layouts.app>

@@ -5,6 +5,7 @@ defmodule LiveStore.Store do
 
   import Ecto.Query, warn: false
 
+  alias Ecto.UUID
   alias LiveStore.Accounts.User
   alias LiveStore.Repo
   alias LiveStore.Store.Attribute
@@ -70,7 +71,7 @@ defmodule LiveStore.Store do
   def get_variant(variant_id), do: Repo.get(Variant, variant_id)
 
   def build_variant(%Product{attribute_types: types} = product) do
-    attributes = Enum.map(types, fn type -> %Attribute{type: type} end)
+    attributes = Enum.map(types, fn type -> %Attribute{id: UUID.generate(), type: type} end)
     %Variant{} = Ecto.build_assoc(product, :variants, attributes: attributes)
   end
 

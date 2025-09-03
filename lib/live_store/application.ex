@@ -7,6 +7,7 @@ defmodule LiveStore.Application do
 
   @impl true
   def start(_type, _args) do
+    File.mkdir_p!(LiveStore.Uploads.uploads_dir())
     LiveStore.Config.init_table()
 
     children = [

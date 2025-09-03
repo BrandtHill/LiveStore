@@ -16,7 +16,7 @@ defmodule LiveStoreWeb.ShopLive.ProductCardComponent do
         </div>
 
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-base-content truncate">{@product.name}</h3>
+          <h3 class="text-md font-semibold text-base-content">{@product.name}</h3>
           <p class="text-sm text-base-content mt-1">{price_range(@product)}</p>
 
           <div class="mt-2">

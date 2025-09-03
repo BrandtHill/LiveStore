@@ -36,8 +36,12 @@ defmodule LiveStore.Uploads do
     |> Repo.delete()
   end
 
+  def uploads_dir() do
+    Application.get_env(:live_store, :uploads_dir, "./uploads")
+  end
+
   def full_path(name) do
-    Path.join([:code.priv_dir(:live_store), "static", "uploads", name])
+    Path.join(uploads_dir(), name)
   end
 
   defp transparent?(image) do

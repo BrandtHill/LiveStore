@@ -25,6 +25,10 @@ defmodule LiveStoreWeb.Endpoint do
     gzip: false,
     only: LiveStoreWeb.static_paths()
 
+  plug Plug.Static,
+    at: "/uploads/",
+    from: {LiveStore.Uploads, :uploads_dir, []}
+
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
