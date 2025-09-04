@@ -12,10 +12,6 @@ defmodule LiveStoreWeb.Layouts do
 
   embed_templates "layouts/*"
 
-  @env Application.compile_env(:live_store, :config_env)
-
-  defp env(), do: @env
-
   @doc """
   Renders your app layout.
 
@@ -57,7 +53,7 @@ defmodule LiveStoreWeb.Layouts do
             <.icon name="hero-shopping-bag" /> Shop
           </.link>
         </div>
-        <.theme_toggle :if={env() == :dev} />
+        <.theme_toggle :if={Application.get_env(:live_store, :config_env) == :dev} />
         <div>
           <input id="nav-menu-toggle" type="checkbox" class="hidden peer" />
           <label

@@ -11,8 +11,6 @@ defmodule Mix.Tasks.Livestore.Config do
   def run(args) do
     Mix.Task.run("app.config")
 
-    Application.ensure_all_started(:live_store)
-
     case args do
       [key, value] ->
         ReleaseTasks.change_config(key, value)

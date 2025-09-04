@@ -10,8 +10,6 @@ defmodule Mix.Tasks.Livestore.Admin do
   def run(args) do
     Mix.Task.run("app.config")
 
-    Application.ensure_all_started(:live_store)
-
     ReleaseTasks.make_admin(args)
   end
 end

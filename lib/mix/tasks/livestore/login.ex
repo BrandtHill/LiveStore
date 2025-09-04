@@ -10,8 +10,6 @@ defmodule Mix.Tasks.Livestore.Login do
   def run(args) do
     Mix.Task.run("app.config")
 
-    Application.ensure_all_started(:live_store)
-
     ReleaseTasks.login(args)
   end
 end

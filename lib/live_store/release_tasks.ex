@@ -1,7 +1,8 @@
 defmodule LiveStore.ReleaseTasks do
   @moduledoc """
-  ReleaseTasks that can run from production.
+  ReleaseTasks that can run from production without Mix.
   """
+  @app :live_store
 
   alias LiveStore.Accounts
   alias LiveStore.Accounts.User
@@ -15,7 +16,7 @@ defmodule LiveStore.ReleaseTasks do
   def make_admin(email) when is_binary(email), do: make_admin([email])
 
   def make_admin(args) when is_list(args) do
-    Application.ensure_all_started(:live_store)
+    Application.ensure_all_started(@app)
 
     with [email | _] <- args,
          %User{} = user <- assert_account(email),
@@ -37,7 +38,7 @@ defmodule LiveStore.ReleaseTasks do
   def login(email) when is_binary(email), do: login([email])
 
   def login(args) when is_list(args) do
-    Application.ensure_all_started(:live_store)
+    Application.ensure_all_started(@app)
 
     with [email | _] <- args,
          %User{} = user <- assert_account(email),
@@ -63,6 +64,8 @@ defmodule LiveStore.ReleaseTasks do
   end
 
   def config() do
+    Application.ensure_all_started(@app)
+
     IO.puts("""
     Current config read from ETS:
     #{inspect(Config.config(), pretty: true)}
@@ -73,6 +76,8 @@ defmodule LiveStore.ReleaseTasks do
   end
 
   def change_config(key, value) do
+    Application.ensure_all_started(@app)
+
     case Config.config() |> Config.changeset(%{key => value}) do
       %Ecto.Changeset{valid?: true, changes: changes} = cs when map_size(changes) > 0 ->
         Config.update(cs)
@@ -94,5 +99,30 @@ defmodule LiveStore.ReleaseTasks do
       %User{} = user -> user
       {:ok, %User{} = user} -> user
     end
+  end
+
+  ## DB Migration Release Tasks
+
+  def migrate do
+    load_app()
+
+    for repo <- repos() do
+      {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+    end
+  end
+
+  def rollback(repo, version) do
+    load_app()
+    {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
+  end
+
+  defp repos do
+    Application.fetch_env!(@app, :ecto_repos)
+  end
+
+  defp load_app do
+    # Many platforms require SSL when connecting to the database
+    Application.ensure_all_started(:ssl)
+    Application.ensure_loaded(@app)
   end
 end
