@@ -46,7 +46,7 @@ defmodule LiveStoreWeb.ContactLive do
     {:ok,
      assign(socket,
        form: to_form(%{} |> ContactForm.changeset() |> merge_params(socket)),
-       challenge: challenge,
+       challenge: connected?(socket) && challenge || "Generating math problem... 😎",
        solution: solution
      )}
   end

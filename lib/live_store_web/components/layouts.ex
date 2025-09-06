@@ -130,7 +130,7 @@ defmodule LiveStoreWeb.Layouts do
     >
       <div class="text-md text-base-content opacity-80">
         © {Date.utc_today().year} {LiveStore.Config.store_name()} •
-        <.link href={~p"/contact"} class="underline hover:text-primary transition">
+        <.link navigate={~p"/contact"} class="underline hover:text-primary transition">
           Contact Us
         </.link>
       </div>
