@@ -6,7 +6,10 @@ defmodule LiveStore.Accounts do
   import Ecto.Query, warn: false
   alias LiveStore.Repo
 
-  alias LiveStore.Accounts.{User, UserToken, UserNotifier}
+  alias LiveStore.Accounts.ContactForm
+  alias LiveStore.Accounts.User
+  alias LiveStore.Accounts.UserToken
+  alias LiveStore.Accounts.UserNotifier
 
   ## Database getters
 
@@ -214,6 +217,12 @@ defmodule LiveStore.Accounts do
     user
     |> User.stripe_changeset(stripe_customer_id)
     |> Repo.update()
+  end
+
+  def insert_contact_form(%User{id: user_id}, content) do
+    %{content: content, user_id: user_id}
+    |> ContactForm.changeset()
+    |> Repo.insert()
   end
 
   ## Token helper

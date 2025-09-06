@@ -35,7 +35,8 @@ defmodule LiveStore.Stripe do
       ui_mode: :embedded,
       mode: :payment,
       line_items: line_items,
-      return_url: "#{LiveStoreWeb.Endpoint.static_url()}/order/success?checkout_session_id={CHECKOUT_SESSION_ID}",
+      return_url:
+        "#{LiveStoreWeb.Endpoint.static_url()}/order/success?checkout_session_id={CHECKOUT_SESSION_ID}",
       automatic_tax: %{
         enabled: true
       },

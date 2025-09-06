@@ -30,6 +30,8 @@ defmodule LiveStoreWeb.Layouts do
 
   attr :current_user, :map, default: nil
 
+  attr :render_footer, :boolean, default: false
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -121,6 +123,18 @@ defmodule LiveStoreWeb.Layouts do
         {render_slot(@inner_block)}
       </div>
     </main>
+
+    <footer
+      :if={assigns[:render_footer]}
+      class="relative z-10 text-center py-6 bg-gradient-to-t from-base-300/90 via-base-300/50 to-transparent w-full"
+    >
+      <div class="text-md text-base-content opacity-80">
+        © {Date.utc_today().year} {LiveStore.Config.store_name()} •
+        <.link href={~p"/contact"} class="underline hover:text-primary transition">
+          Contact Us
+        </.link>
+      </div>
+    </footer>
 
     <.flash_group flash={@flash} />
     """
