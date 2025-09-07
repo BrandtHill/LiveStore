@@ -57,24 +57,27 @@ Hooks.StripeCheckout = {
   }
 }
 
+const checkNavScroll = (element) => {
+  const full = "bg-base-100/100"
+  const half = "bg-base-100/30"
+  if (window.scrollY > 50) {
+    element.classList.remove(half)
+    element.classList.add(full)
+  } else {
+    element.classList.remove(full)
+    element.classList.add(half)
+  }
+}
+
 Hooks.NavFade = {
+  updated() {
+    checkNavScroll(this.el)
+  },
+
   mounted() {
-    const full = "bg-base-100/100"
-    const half = "bg-base-100/30"
-    const checkScroll = () => {  
-      if (window.scrollY > 50) {
-        this.el.classList.remove(half)
-        this.el.classList.add(full)
-      } else {
-        this.el.classList.remove(full)
-        this.el.classList.add(half)
-      }
-    }
-
-    checkScroll()
-
-    window.addEventListener("scroll", () => {
-      checkScroll()
+    checkNavScroll(this.el)
+    window.addEventListener("scroll", () => { 
+      checkNavScroll(this.el) 
     })
   }
 }

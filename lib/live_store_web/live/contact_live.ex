@@ -41,16 +41,20 @@ defmodule LiveStoreWeb.ContactLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {challenge, solution} = gen_math_challenge()
+    {challenge, solution} =
+      if connected?(socket),
+        do: gen_math_challenge(),
+        else: {"Generating math problem... 😎", nil}
 
     {:ok,
      assign(socket,
        form: to_form(%{} |> ContactForm.changeset() |> merge_params(socket)),
-       challenge: connected?(socket) && challenge || "Generating math problem... 😎",
+       challenge: challenge,
        solution: solution
      )}
   end
 
+  # The math challenge acts as a primitive captcha, but it requires you to be connected to the LiveView socket to pass
   defp gen_math_challenge() do
     a = Enum.random(1..7)
     b = Enum.random(2..11)
@@ -61,6 +65,8 @@ defmodule LiveStoreWeb.ContactLive do
     {string, solution}
   end
 
+  # Why? Because some error changesets may be a User when attempting to insert a new one by email,
+  # not a ContactForm. This is highly advanced.
   def handle_event("validate", %{"user" => params}, socket) do
     handle_event("validate", %{"contact_form" => params}, socket)
   end
