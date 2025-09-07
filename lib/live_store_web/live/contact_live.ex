@@ -4,6 +4,7 @@ defmodule LiveStoreWeb.ContactLive do
   alias LiveStore.Accounts
   alias LiveStore.Accounts.ContactForm
   alias LiveStore.Accounts.User
+  alias LiveStore.Accounts.UserNotifier
 
   @impl true
   def render(assigns) do
@@ -23,6 +24,7 @@ defmodule LiveStoreWeb.ContactLive do
             field={@form[:content]}
             label="Content"
             phx-hook="ResizeableTextarea"
+            phx-debounce="500"
             maxlength="1000"
             placeholder={"You've reached the voicemail box of #{LiveStore.Config.store_name}. Please leave your name, number, and a brief message and we'll be sure to get back to you as soon as possible."}
           />
@@ -73,7 +75,7 @@ defmodule LiveStoreWeb.ContactLive do
 
   def handle_event("validate", %{"contact_form" => params}, socket) do
     changeset = params |> ContactForm.changeset() |> merge_params(socket)
-    {:noreply, assign(socket, :form, to_form(changeset))}
+    {:noreply, assign(socket, :form, to_form(changeset, action: :validate))}
   end
 
   @impl true
@@ -84,7 +86,9 @@ defmodule LiveStoreWeb.ContactLive do
       ) do
     with {^solution, ""} <- Integer.parse(params["challenge"]),
          {:ok, %User{} = user} <- assert_user(current_user, params["email"]),
-         {:ok, %ContactForm{}} <- Accounts.insert_contact_form(user, params["content"]) do
+         {:ok, %ContactForm{} = cf} <- Accounts.insert_contact_form(user, params["content"]) do
+      UserNotifier.deliver_contact_form(user, cf)
+
       {:noreply,
        socket |> put_flash(:info, "Contact submitted successfully.") |> push_navigate(to: ~p"/")}
     else

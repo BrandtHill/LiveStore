@@ -2,6 +2,7 @@ defmodule LiveStore.Accounts.UserNotifier do
   import Swoosh.Email
 
   alias LiveStore.Mailer
+  alias LiveStore.Accounts.ContactForm
   alias LiveStore.Accounts.User
   alias LiveStoreWeb.Emails
 
@@ -57,5 +58,30 @@ defmodule LiveStore.Accounts.UserNotifier do
     html = Emails.heex_to_html(template)
 
     deliver(user.email, "Order Shipped", html)
+  end
+
+  @doc """
+  Delivers a text-based email to the configured store email (from itself) based on a user-submitted
+  contact form. The reply-to address is that of the user, not the store email
+  """
+  def deliver_contact_form(%User{email: user_email}, %ContactForm{} = contact_form) do
+    store_email = LiveStore.Config.store_email()
+    store_name = LiveStore.Config.store_name()
+
+    email =
+      new()
+      |> to({store_name, store_email})
+      |> from({store_name, store_email})
+      |> subject("#{store_name} Contact Form Submission from #{user_email}")
+      |> reply_to(user_email)
+      |> text_body("""
+      #{user_email} submitted a contact form for #{store_name} with the following content:
+
+      #{contact_form.content}
+      """)
+
+    with {:ok, _metadata} <- Mailer.deliver(email) do
+      {:ok, email}
+    end
   end
 end
