@@ -181,7 +181,7 @@ defmodule LiveStoreWeb.UserAuth do
       if cart_id = conn.cookies[@cart_cookie] do
         Store.get_cart(cart_id)
       else
-        Store.fetch_user_cart()
+        Store.build_cart()
       end
 
     conn
@@ -191,7 +191,7 @@ defmodule LiveStoreWeb.UserAuth do
   end
 
   def fetch_cart(%{assigns: %{current_user: user}} = conn, _opts) do
-    cart = Store.fetch_user_cart(user)
+    cart = Store.get_user_cart(user)
 
     conn
     |> assign(:cart, cart)

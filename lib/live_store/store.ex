@@ -105,40 +105,56 @@ defmodule LiveStore.Store do
 
   ## Carts
 
-  def fetch_user_cart(user \\ nil)
-  def fetch_user_cart(%User{id: user_id}), do: fetch_user_cart(user_id)
+  def build_cart(id \\ UUIDv7.generate()) do
+    %Cart{id: id, items: []}
+  end
 
-  def fetch_user_cart(user_id) do
-    %{user_id: user_id}
-    |> Cart.changeset()
-    |> Repo.insert!(
-      returning: true,
-      conflict_target: [:user_id],
-      on_conflict: {:replace, [:updated_at]}
-    )
-    |> Repo.preload([:items])
+  def get_user_cart(%User{id: user_id}) do
+    case Repo.get_by(Cart, user_id: user_id) do
+      %Cart{} = cart -> Repo.preload(cart, :items)
+      nil -> %{user_id: user_id} |> Cart.changeset() |> Repo.insert!() |> Repo.preload(:items)
+    end
   end
 
   def get_cart(id) do
-    Cart
-    |> Repo.get(id)
-    |> Repo.preload([:items])
+    case Repo.get(Cart, id) do
+      %Cart{} = cart -> Repo.preload(cart, :items)
+      nil -> build_cart(id)
+    end
+  end
+
+  def persist_cart(%Cart{} = cart) do
+    cart
+    |> Cart.changeset(%{})
+    |> Repo.insert_or_update!()
   end
 
   def preload_cart(%Cart{} = cart) do
     Repo.preload(cart, [:user, items: [variant: [product: :images]]])
   end
 
-  def add_to_cart(%Cart{id: c_id, items: items}, %Variant{id: v_id, stock: stock}) do
+  @spec add_to_cart(%Cart{}, %Variant{}) :: {:ok, %Cart{}}
+  def add_to_cart(%Cart{items: items} = cart, %Variant{id: v_id, stock: stock}) do
+    cart = persist_cart(cart)
     item = Enum.find(items, %CartItem{quantity: 0}, &(&1.variant_id == v_id))
 
-    item
-    |> CartItem.changeset(%{
-      cart_id: c_id,
-      variant_id: v_id,
-      quantity: min(stock, item.quantity + 1)
-    })
-    |> Repo.insert_or_update()
+    item =
+      item
+      |> CartItem.changeset(%{
+        cart_id: cart.id,
+        variant_id: v_id,
+        quantity: min(stock, item.quantity + 1)
+      })
+      |> Repo.insert_or_update!()
+
+    items =
+      if index = Enum.find_index(items, &(&1.id == item.id)) do
+        List.replace_at(items, index, item)
+      else
+        items ++ [item]
+      end
+
+    {:ok, %{cart | items: items}}
   end
 
   def edit_cart_item(%CartItem{variant: %Variant{stock: stock}} = item, quantity) do

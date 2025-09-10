@@ -170,18 +170,8 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   end
 
   def handle_event("add_to_cart", _params, socket) do
-    {:ok, item} = Store.add_to_cart(socket.assigns.cart, socket.assigns.selected_variant)
-
-    items = socket.assigns.cart.items
-
-    items =
-      if index = Enum.find_index(items, &(&1.id == item.id)) do
-        List.replace_at(items, index, item)
-      else
-        items ++ [item]
-      end
-
-    {:noreply, assign(socket, cart: %{socket.assigns.cart | items: items}, added_to_cart: true)}
+    {:ok, cart} = Store.add_to_cart(socket.assigns.cart, socket.assigns.selected_variant)
+    {:noreply, assign(socket, cart: cart, added_to_cart: true)}
   end
 
   defp create_attribute_map(variants, selected_attributes) do

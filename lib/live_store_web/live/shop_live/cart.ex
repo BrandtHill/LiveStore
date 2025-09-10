@@ -123,10 +123,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
      socket
      |> assign(:cart, cart)
      |> assign(:sub_total, Store.calculate_total(cart))
-     |> assign(
-       :shipping,
-       (cart.items == [] && 0) || LiveStore.Config.shipping_cost()
-     )
+     |> assign(:shipping, (cart.items == [] && 0) || LiveStore.Config.shipping_cost())
      |> assign(:stripe_public_key, Application.get_env(:live_store, :stripe_public_key))
      |> assign(:client_secret, nil)}
   end
@@ -167,7 +164,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
   defp update_items(socket, items) do
     cart = %Cart{socket.assigns.cart | items: items}
-    shipping = if items == [], do: 0, else: Application.get_env(:live_store, :shipping_cost)
+    shipping = if items == [], do: 0, else: LiveStore.Config.shipping_cost()
 
     {:noreply,
      assign(socket, cart: cart, sub_total: Store.calculate_total(cart), shipping: shipping)}
