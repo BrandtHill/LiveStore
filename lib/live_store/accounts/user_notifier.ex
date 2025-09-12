@@ -4,16 +4,21 @@ defmodule LiveStore.Accounts.UserNotifier do
   alias LiveStore.Mailer
   alias LiveStore.Accounts.ContactForm
   alias LiveStore.Accounts.User
+  alias LiveStore.Config
   alias LiveStoreWeb.Emails
 
   # Delivers the email using the application mailer.
-  defp deliver(recipient, subject, body) do
+  defp deliver(recipient, subject, body, bcc_store? \\ false) do
+    store_email = {Config.store_name(), Config.store_email()}
+
     email =
       new()
       |> to(recipient)
-      |> from({LiveStore.Config.store_name(), LiveStore.Config.store_email()})
+      |> from(store_email)
       |> subject(subject)
       |> html_body(body)
+
+    email = if bcc_store?, do: bcc(email, store_email), else: email
 
     with {:ok, _metadata} <- Mailer.deliver(email) do
       {:ok, email}
@@ -27,7 +32,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     template = Emails.update_email(%{user: user, url: url})
     html = Emails.heex_to_html(template)
 
-    deliver(user.email, "Update email instructions", html)
+    deliver(user.email, "#{Config.store_name()} update email instructions", html)
   end
 
   @doc """
@@ -37,7 +42,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     template = Emails.magic_link(%{user: user, url: url})
     html = Emails.heex_to_html(template)
 
-    deliver(user.email, "Login instructions", html)
+    deliver(user.email, "#{Config.store_name()} login instructions", html)
   end
 
   @doc """
@@ -47,7 +52,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     template = Emails.order_confirmation(%{order: order})
     html = Emails.heex_to_html(template)
 
-    deliver(user.email, "Order Confirmation", html)
+    deliver(user.email, "#{Config.store_name()} - Order Confirmation", html, true)
   end
 
   @doc """
@@ -57,7 +62,7 @@ defmodule LiveStore.Accounts.UserNotifier do
     template = Emails.order_shipped(%{order: order})
     html = Emails.heex_to_html(template)
 
-    deliver(user.email, "Order Shipped", html)
+    deliver(user.email, "#{Config.store_name()} - Order Shipped", html)
   end
 
   @doc """
@@ -65,8 +70,8 @@ defmodule LiveStore.Accounts.UserNotifier do
   contact form. The reply-to address is that of the user, not the store email
   """
   def deliver_contact_form(%User{email: user_email}, %ContactForm{} = contact_form) do
-    store_email = LiveStore.Config.store_email()
-    store_name = LiveStore.Config.store_name()
+    store_email = Config.store_email()
+    store_name = Config.store_name()
 
     email =
       new()
