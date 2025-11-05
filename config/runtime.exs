@@ -72,9 +72,20 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :live_store, LiveStore.Mailer,
-    adapter: Swoosh.Adapters.Sendgrid,
-    api_key: System.get_env("SENDGRID_API_KEY")
+  cond do
+    key = System.get_env("POSTMARK_API_KEY") ->
+      config :live_store, LiveStore.Mailer,
+        adapter: Swoosh.Adapters.Postmark,
+        api_key: key
+
+    key = System.get_env("SENDGRID_API_KEY") ->
+      config :live_store, LiveStore.Mailer,
+        adapter: Swoosh.Adapters.Sendgrid,
+        api_key: key
+
+    true ->
+      IO.warn("No API key configured for Postmark or Sendgrid.", [])
+  end
 
   # ## SSL Support
   #

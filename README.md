@@ -17,6 +17,7 @@ STRIPE_SECRET="sk_xxx..."
 STRIPE_PUBLIC="pk_xxx..."
 STRIPE_WEBHOOK_SECRET="whsec_xxx..."
 SENDGRID_API_KEY="SG.xxx..."
+POSTMARK_API_KEY="abcdef-..."
 DATABASE_URL="ecto://..."
 UPLOADS_DIR="/var/my_live_store/uploads/"
 PHX_HOST="..."
@@ -25,7 +26,10 @@ PORT="4000"
 SECRET_KEY_BASE="..."
 ```
 
-LiveStore assumes you have SendGrid and Stripe accounts set up.
+Postmark and SendGrid are supported as email providers. The one used at runtime is determined by which of the `{PROVIDER}_API_KEY` env vars are set.
+If both `POSTMARK_API_KEY` and `SENDGRID_API_KEY` are both set, Postmark will take precedence as the email provider.
+
+LiveStore assumes you have Postmark or SendGrid and Stripe accounts set up.
 
 LiveStore also assumes you're running behind a reverse proxy like Nginx for handling TLS.
 If you want to do it natively, you may wish to set things up yourself in `config/runtime.exs`.
@@ -92,7 +96,7 @@ MIX_ENV=prod mix livestore.config "store_email" "sales@mystore.com"
 # or, release task
 bin/live_store eval "LiveStore.ReleaseTasks.change_config(\"store_email\", \"sales@mystore.com\")"
 ```
-Then you can login through the app (via email) since you've set the `store_email` config item to your Sendgrid verified sender.
+Then you can login through the app (via email) since you've set the `store_email` config item to your Postmark/Sendgrid verified sender.
 
 ## Running
 
