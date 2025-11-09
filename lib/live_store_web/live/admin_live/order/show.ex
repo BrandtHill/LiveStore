@@ -21,15 +21,15 @@ defmodule LiveStoreWeb.AdminLive.Order.Show do
 
           <div class="max-w-xs">
             <h3 class="font-semibold text-lg">Tracking Number</h3>
-            <form phx-submit="save" phx-change="validate">
-              <.input type="text" name="tracking_number" value={@order.tracking_number} />
+            <.form for={@form} id="tracking-number-form" phx-change="validate" phx-submit="save">
+              <.input field={@form[:tracking_number]} type="text" />
               <.button
-                disabled={@order.tracking_number == @tracking_number}
+                disabled={@order.tracking_number == @form[:tracking_number].value}
                 phx-disable-with="Saving..."
               >
                 Save Tracking Number
               </.button>
-            </form>
+            </.form>
           </div>
           <div>
             <h3 class="font-semibold text-lg">Status</h3>
@@ -49,9 +49,9 @@ defmodule LiveStoreWeb.AdminLive.Order.Show do
               </p>
               <p>{@order.shipping_details.country}</p>
               <p>{@order.shipping_details.phone}</p>
+              <p>{@order.user.email}</p>
             </div>
           </div>
-
           <div>
             <h3 class="font-semibold text-lg">Payment Reference</h3>
             <p class="text-sm opacity-80">{@order.stripe_payment_id}</p>
@@ -104,17 +104,24 @@ defmodule LiveStoreWeb.AdminLive.Order.Show do
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
     order = Orders.get_order(id)
-    {:ok, assign(socket, order: order, tracking_number: order.tracking_number)}
+
+    {:ok,
+     socket
+     |> assign(:order, order)
+     |> assign_new(:form, fn ->
+       to_form(Orders.change_tracking_number(order, order.tracking_number))
+     end)}
   end
 
   @impl true
-  def handle_event("validate", %{"tracking_number" => tracking_number}, socket) do
-    {:noreply, assign(socket, tracking_number: tracking_number)}
+  def handle_event("validate", %{"order" => %{"tracking_number" => tracking_number}}, socket) do
+    changeset = Orders.change_tracking_number(socket.assigns.order, tracking_number)
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  def handle_event("save", %{"tracking_number" => tracking_number}, socket) do
+  def handle_event("save", %{"order" => %{"tracking_number" => tracking_number}}, socket) do
     {:ok, order} = Orders.set_order_tracking_number(socket.assigns.order, tracking_number)
 
-    {:noreply, assign(socket, order: order, tracking_number: tracking_number)}
+    {:noreply, assign(socket, order: order)}
   end
 end

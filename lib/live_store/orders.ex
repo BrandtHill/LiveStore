@@ -90,7 +90,7 @@ defmodule LiveStore.Orders do
   def get_order(id) do
     Order
     |> Repo.get(id)
-    |> Repo.preload(items: [variant: :product])
+    |> preload_order()
   end
 
   def get_order_by_stripe_checkout_id(stripe_id) do
@@ -104,7 +104,7 @@ defmodule LiveStore.Orders do
       from o in Order,
         where: [user_id: ^user_id],
         order_by: [desc: :inserted_at],
-        preload: [items: [variant: :product]]
+        preload: [:user, items: [variant: :product]]
     )
   end
 
@@ -113,12 +113,16 @@ defmodule LiveStore.Orders do
       from Order,
         where: [status: ^status],
         order_by: [desc: :inserted_at],
-        preload: [:items]
+        preload: [:user, :items]
     )
   end
 
   defp preload_order(%Order{} = order) do
     Repo.preload(order, [:user, items: [variant: :product]])
+  end
+
+  def change_tracking_number(%Order{} = order, tracking_number) do
+    Order.changeset(order, %{tracking_number: tracking_number})
   end
 
   def set_order_tracking_number(%Order{status: :processing} = order, tracking_number) do

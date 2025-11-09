@@ -62,6 +62,7 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
           </p>
           <p>{@order.shipping_details.country}</p>
           <p>{@order.shipping_details.phone}</p>
+          <p>{@order.user.email}</p>
         </div>
       </div>
 
@@ -89,7 +90,10 @@ defmodule LiveStoreWeb.OrderLive.OrderComponents do
     <div class="bg-base-100 shadow rounded-lg p-4 grid gap-y-2 sm:grid-cols-[50%_30%_auto] items-center hover:bg-base-200 transition">
       <span class="space-y-1">
         <div class="font-semibold">Order {@order.id}</div>
-        <div class="text-sm opacity-80">{DateTime.to_date(@order.inserted_at)}</div>
+        <div class="text-sm opacity-80">
+          <span>{DateTime.to_date(@order.inserted_at)}</span>
+          <span class="ml-8">{@order.user.email}</span>
+        </div>
       </span>
 
       <span class="space-y-1">

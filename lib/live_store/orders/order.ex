@@ -54,6 +54,7 @@ defmodule LiveStore.Orders.Order do
     |> validate_number(:amount_shipping, greater_than_or_equal_to: 0)
     |> validate_number(:amount_tax, greater_than_or_equal_to: 0)
     |> foreign_key_constraint(:user_id)
+    |> unsafe_validate_unique(:tracking_number, LiveStore.Repo)
     |> unique_constraint(:stripe_checkout_id)
     |> unique_constraint(:stripe_payment_id)
     |> unique_constraint(:tracking_number)

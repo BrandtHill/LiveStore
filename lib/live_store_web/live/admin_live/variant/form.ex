@@ -102,7 +102,7 @@ defmodule LiveStoreWeb.AdminLive.Variant.Form do
      |> assign(:attribute_map, attribute_map)
      |> assign_new(:form, fn ->
        to_form(Store.change_variant(variant))
-     end)}
+     end), temporary_assigns: [form: nil]}
   end
 
   @impl true
