@@ -26,49 +26,56 @@ defmodule LiveStoreWeb.ShopLive.Cart do
             >
               <img
                 src={image_path(item)}
-                class="w-24 h-24 object-cover rounded"
+                class="h-40 w-32 sm:w-24 sm:h-24 object-cover rounded flex-shrink-0"
               />
 
-              <div class="flex-grow space-y-1">
-                <div class="font-semibold">{item.variant.product.name}</div>
-                <span
-                  :for={%{type: type, value: value} <- item.variant.attributes}
-                  class="text-sm font-thin"
-                >
-                  {type}: {value}{if List.last(item.variant.attributes).type != type, do: ","}
-                </span>
-                <div class="text-sm">SKU: {item.variant.sku}</div>
-              </div>
-
-              <div class="flex flex-col items-end justify-between h-full ml-4 max-w-[6rem]">
-                <div class="text-sm font-medium">
-                  {money((item.variant.price_override || item.variant.product.price) * item.quantity)}
-                </div>
-                <div class={[
-                  "text-xs font-thin",
-                  if(item.quantity > 1, do: "visible", else: "invisible")
-                ]}>
-                  ({money(item.variant.price_override || item.variant.product.price)} each)
-                </div>
-                <div class="flex items-center gap-1 w-full">
-                  <form phx-change="quantity" class="mt-2">
-                    <input type="hidden" name="item[id]" value={item.id} />
-                    <.input
-                      type="number"
-                      name="item[quantity]"
-                      value={item.quantity}
-                      min="1"
-                      max={item.variant.stock}
-                      phx-debounce="500"
-                    />
-                  </form>
-                  <.button
-                    phx-click="remove"
-                    phx-value-id={item.id}
-                    class="btn text-xs px-2 py-1 inline-flex items-center h-8"
+              <div class="flex flex-col sm:flex-row items-start gap-4 flex-1">
+                <div class="space-y-1 sm:flex-1">
+                  <div class="font-semibold">{item.variant.product.name}</div>
+                  <span
+                    :for={%{type: type, value: value} <- item.variant.attributes}
+                    class="text-sm font-thin"
                   >
-                    ✕
-                  </.button>
+                    {type}: {value}{if List.last(item.variant.attributes).type != type, do: ","}
+                  </span>
+                  <div class="text-sm">SKU: {item.variant.sku}</div>
+                </div>
+
+                <div class="flex flex-col items-start sm:items-end justify-between mt-2 sm:mt-0 sm:ml-auto w-full sm:w-auto sm:flex-shrink-0">
+                  <div class="text-sm font-medium">
+                    {money(
+                      (item.variant.price_override || item.variant.product.price) * item.quantity
+                    )}
+                  </div>
+
+                  <div class={[
+                    "text-xs font-thin",
+                    if(item.quantity > 1, do: "visible", else: "invisible")
+                  ]}>
+                    ({money(item.variant.price_override || item.variant.product.price)} each)
+                  </div>
+
+                  <div class="flex items-center gap-1 justify-end mt-2">
+                    <form phx-change="quantity" class="mt-0">
+                      <input type="hidden" name="item[id]" value={item.id} />
+                      <.input
+                        type="number"
+                        name="item[quantity]"
+                        value={item.quantity}
+                        min="1"
+                        max={item.variant.stock}
+                        phx-debounce="500"
+                      />
+                    </form>
+
+                    <.button
+                      phx-click="remove"
+                      phx-value-id={item.id}
+                      class="btn text-xs px-2 py-1 inline-flex items-center h-8 mb-2"
+                    >
+                      ✕
+                    </.button>
+                  </div>
                 </div>
               </div>
             </div>
