@@ -7,6 +7,8 @@ defmodule LiveStore.Accounts.UserNotifier do
   alias LiveStore.Config
   alias LiveStoreWeb.Emails
 
+  require Logger
+
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body, bcc_store? \\ false) do
     store_email = {Config.store_name(), Config.store_email()}
@@ -20,8 +22,13 @@ defmodule LiveStore.Accounts.UserNotifier do
 
     email = if bcc_store?, do: bcc(email, store_email), else: email
 
-    with {:ok, _metadata} <- Mailer.deliver(email) do
+    with {:ok, metadata} <- Mailer.deliver(email) do
+      Logger.info("Email #{subject} successfully sent to #{recipient}: #{inspect(metadata)}")
       {:ok, email}
+    else
+      error ->
+        Logger.error("Error sending email #{subject} to #{recipient}: #{inspect(error)}")
+        error
     end
   end
 
@@ -49,6 +56,7 @@ defmodule LiveStore.Accounts.UserNotifier do
   Deliver email after an order has been placed.
   """
   def deliver_order_confirmation(%User{} = user, order) do
+    Logger.info("Sending order confirmation email to #{user.email} for order #{order.id}")
     template = Emails.order_confirmation(%{order: order})
     html = Emails.heex_to_html(template)
 
@@ -59,6 +67,7 @@ defmodule LiveStore.Accounts.UserNotifier do
   Deliver email after an order status changed to `:shipped`.
   """
   def deliver_order_shipped(%User{} = user, order) do
+    Logger.info("Sending order shipped email to #{user.email} for order #{order.id}")
     template = Emails.order_shipped(%{order: order})
     html = Emails.heex_to_html(template)
 
@@ -86,7 +95,12 @@ defmodule LiveStore.Accounts.UserNotifier do
       """)
 
     with {:ok, _metadata} <- Mailer.deliver(email) do
+      Logger.info("Successfully sent contact form email: #{contact_form.content}")
       {:ok, email}
+    else
+      error ->
+        Logger.error("Error sending contact form email: #{inspect(error)}")
+        error
     end
   end
 end

@@ -16,10 +16,19 @@ defmodule LiveStore.Orders do
 
   import Ecto.Query
 
+  require Logger
+
   def create_order(%Session{} = session) do
     Repo.transact(fn ->
       %Cart{} = cart = Store.get_cart(session.metadata["cart_id"])
       cart = Repo.preload(cart, items: [variant: :product])
+
+      Logger.info("""
+      Creating Order:
+        Cart ID: #{cart.id}
+        Stripe Checkout Session ID: #{session.id}
+        User Email: #{session.customer_details.email}
+      """)
 
       {:ok, %User{} = user} =
         case Accounts.get_user_by_email(session.customer_details.email) do
@@ -82,6 +91,7 @@ defmodule LiveStore.Orders do
     end)
     |> then(fn {:ok, order} ->
       order = preload_order(order)
+      Logger.info("Order successfully created: #{inspect(order)}")
       Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
       {:ok, order}
     end)
@@ -96,7 +106,7 @@ defmodule LiveStore.Orders do
   def get_order_by_stripe_checkout_id(stripe_id) do
     Order
     |> Repo.get_by(stripe_checkout_id: stripe_id)
-    |> Repo.preload(items: [variant: :product])
+    |> preload_order()
   end
 
   def get_orders_by_user(%User{id: user_id}) do

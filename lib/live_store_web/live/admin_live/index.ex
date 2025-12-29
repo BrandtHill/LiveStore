@@ -15,7 +15,7 @@ defmodule LiveStoreWeb.AdminLive.Index do
 
         <div class="divider" />
 
-        <.button navigate={~p"/admin/settings"} variant="primary">Store Settings</.button>
+        <.button navigate={~p"/admin/orders"} variant="primary">Orders</.button>
 
         <div class="divider" />
 
@@ -23,7 +23,7 @@ defmodule LiveStoreWeb.AdminLive.Index do
 
         <div class="divider" />
 
-        <.button navigate={~p"/admin/orders"} variant="primary">Orders</.button>
+        <.button navigate={~p"/admin/settings"} variant="primary">Store Settings</.button>
       </div>
     </Layouts.app>
     """
