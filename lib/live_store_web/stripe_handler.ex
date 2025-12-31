@@ -1,6 +1,8 @@
 defmodule LiveStoreWeb.StripeHandler do
   alias LiveStore.Orders
+  alias LiveStore.Stripe, as: StripeCache
   alias Stripe.Event
+  alias Stripe.PaymentIntent
 
   @behaviour Stripe.WebhookHandler
 
@@ -13,6 +15,14 @@ defmodule LiveStoreWeb.StripeHandler do
       {:order_created, event.data.object.id}
     )
 
+    :ok
+  end
+
+  def handle_event(%Event{
+        type: "payment_intent.succeeded",
+        data: %{object: %PaymentIntent{id: id, shipping: shipping_details}}
+      }) do
+    StripeCache.set_shipping_details(id, shipping_details)
     :ok
   end
 

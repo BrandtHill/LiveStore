@@ -3,6 +3,8 @@ defmodule LiveStore.Stripe do
   alias LiveStore.Store.Cart
   alias Stripe.Checkout.Session
 
+  @table :live_store_stripe
+
   def create_checkout_session(%Cart{} = cart) do
     line_items =
       Enum.map(cart.items, fn i ->
@@ -61,5 +63,24 @@ defmodule LiveStore.Stripe do
     }
     |> Map.merge(customer_params)
     |> Session.create()
+  end
+
+  def init_table() do
+    :ets.new(@table, [:named_table, :public, :set])
+  end
+
+  def set_shipping_details(payment_intent_id, shipping_details) do
+    :ets.insert(@table, {payment_intent_id, shipping_details})
+  end
+
+  def get_shipping_details(payment_intent_id) do
+    case :ets.lookup(@table, payment_intent_id) do
+      [{^payment_intent_id, shipping_details}] -> shipping_details
+      _ -> nil
+    end
+  end
+
+  def delete_shipping_details(payment_intent_id) do
+    :ets.delete(@table, payment_intent_id)
   end
 end

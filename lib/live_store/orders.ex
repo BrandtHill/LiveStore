@@ -11,6 +11,7 @@ defmodule LiveStore.Orders do
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
   alias LiveStore.Store.Variant
+  alias LiveStore.Stripe, as: StripeCache
   alias LiveStore.Repo
   alias Stripe.Checkout.Session
 
@@ -72,10 +73,15 @@ defmodule LiveStore.Orders do
       end)
 
       shipping_details =
-        session.shipping_details
-        |> Map.merge(session.shipping_details.address)
-        |> Map.put(:street, session.shipping_details.address.line1)
-        |> Map.put(:street_additional, session.shipping_details.address.line2)
+        session.shipping_details ||
+          StripeCache.get_shipping_details(session.payment_intent) ||
+          session.customer_details
+
+      shipping_details =
+        shipping_details
+        |> Map.merge(shipping_details.address)
+        |> Map.put(:street, shipping_details.address.line1)
+        |> Map.put(:street_additional, shipping_details.address.line2)
 
       %{
         stripe_checkout_id: session.id,
@@ -91,6 +97,7 @@ defmodule LiveStore.Orders do
     end)
     |> then(fn {:ok, order} ->
       order = preload_order(order)
+      StripeCache.delete_shipping_details(session.payment_intent)
       Logger.info("Order successfully created: #{inspect(order)}")
       Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
       {:ok, order}

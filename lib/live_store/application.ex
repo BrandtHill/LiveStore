@@ -9,6 +9,7 @@ defmodule LiveStore.Application do
   def start(_type, _args) do
     File.mkdir_p!(LiveStore.Uploads.uploads_dir())
     LiveStore.Config.init_table()
+    LiveStore.Stripe.init_table()
 
     children = [
       LiveStoreWeb.Telemetry,
