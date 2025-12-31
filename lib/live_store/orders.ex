@@ -72,10 +72,10 @@ defmodule LiveStore.Orders do
       end)
 
       shipping_details =
-        session.customer_details
-        |> Map.merge(session.customer_details.address)
-        |> Map.put(:street, session.customer_details.address.line1)
-        |> Map.put(:street_additional, session.customer_details.address.line2)
+        session.shipping_details
+        |> Map.merge(session.shipping_details.address)
+        |> Map.put(:street, session.shipping_details.address.line1)
+        |> Map.put(:street_additional, session.shipping_details.address.line2)
 
       %{
         stripe_checkout_id: session.id,
