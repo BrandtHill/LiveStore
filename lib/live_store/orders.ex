@@ -95,13 +95,25 @@ defmodule LiveStore.Orders do
       |> Order.changeset()
       |> Repo.insert()
     end)
-    |> then(fn {:ok, order} ->
-      order = preload_order(order)
-      StripeCache.delete_shipping_details(session.payment_intent)
-      Logger.info("Order successfully created: #{inspect(order)}")
-      Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
-      {:ok, order}
-    end)
+    |> case do
+      {:ok, order} ->
+        order = preload_order(order)
+        StripeCache.delete_shipping_details(session.payment_intent)
+        Logger.info("Order successfully created: #{inspect(order, pretty: true)}")
+        Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
+        {:ok, order}
+
+      {:error, _error} when is_nil(session.shipping_details) ->
+        Logger.error(
+          "Shipping Address not found when creating order. Fetching Checkout Session from Stripe API and retrying."
+        )
+
+        {:ok, session} = Session.retrieve(session.id)
+        create_order(session)
+
+      {:error, error} ->
+        Logger.error("Error occurred when creating order: #{inspect(error, pretty: true)}")
+    end
   end
 
   def get_order(id) do

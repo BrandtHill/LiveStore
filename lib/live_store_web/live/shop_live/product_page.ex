@@ -34,7 +34,9 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
               <% {nil, _} -> %>
                 <span></span>
               <% {_, true} -> %>
-                <span class="text-sm text-success font-medium">✔ In Stock</span>
+                <span class="text-sm text-success font-medium">
+                  ✔ {@selected_variant.stock} In Stock
+                </span>
               <% {_, false} -> %>
                 <span class="text-sm text-error font-medium">✖ Out of Stock</span>
             <% end %>
