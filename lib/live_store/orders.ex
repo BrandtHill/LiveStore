@@ -113,6 +113,7 @@ defmodule LiveStore.Orders do
 
       {:error, error} ->
         Logger.error("Error occurred when creating order: #{inspect(error, pretty: true)}")
+        {:ok, nil}
     end
   end
 
