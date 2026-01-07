@@ -14,6 +14,8 @@ defmodule LiveStore.Store do
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
 
+  require Logger
+
   ## Products
 
   def list_products do
@@ -134,7 +136,7 @@ defmodule LiveStore.Store do
   end
 
   @spec add_to_cart(%Cart{}, %Variant{}) :: {:ok, %Cart{}}
-  def add_to_cart(%Cart{items: items} = cart, %Variant{id: v_id, stock: stock}) do
+  def add_to_cart(%Cart{items: items} = cart, %Variant{id: v_id, stock: stock, sku: sku}) do
     cart = persist_cart(cart)
     item = Enum.find(items, %CartItem{quantity: 0}, &(&1.variant_id == v_id))
 
@@ -154,16 +156,21 @@ defmodule LiveStore.Store do
         items ++ [item]
       end
 
+    Logger.info("Item added to cart: SKU #{sku}, Quantity: #{item.quantity}")
+
     {:ok, %{cart | items: items}}
   end
 
-  def edit_cart_item(%CartItem{variant: %Variant{stock: stock}} = item, quantity) do
+  def edit_cart_item(%CartItem{variant: %Variant{stock: stock, sku: sku}} = item, quantity) do
+    Logger.info("Item edited in cart: SKU #{sku}, Quantity: #{quantity}")
+
     item
     |> CartItem.changeset(%{quantity: min(stock, quantity)})
     |> Repo.update()
   end
 
-  def delete_cart_item(%CartItem{} = item) do
+  def delete_cart_item(%CartItem{variant: %Variant{sku: sku}} = item) do
+    Logger.info("Item deleted from cart: SKU #{sku}")
     Repo.delete(item)
   end
 

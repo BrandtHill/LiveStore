@@ -9,6 +9,8 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   alias LiveStore.Store.Variant
   alias LiveStore.Stripe
 
+  require Logger
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -137,11 +139,21 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
   @impl true
   def handle_params(_params, _uri, socket) do
-    if socket.assigns.live_action == :checkout do
-      {:ok, %{client_secret: client_secret}} = Stripe.create_checkout_session(socket.assigns.cart)
+    with :checkout <- socket.assigns.live_action,
+         {:ok, %{client_secret: client_secret}} <-
+           Stripe.create_checkout_session(socket.assigns.cart) do
       {:noreply, assign(socket, :client_secret, client_secret)}
     else
-      {:noreply, assign(socket, :client_secret, nil)}
+      :show ->
+        {:noreply, assign(socket, :client_secret, nil)}
+
+      error ->
+        Logger.error("Error loading the checkout view: #{inspect(error)}")
+
+        {:noreply,
+         socket
+         |> put_flash(:error, "Make sure items are in your cart before checkout")
+         |> push_patch(to: ~p"/cart")}
     end
   end
 
