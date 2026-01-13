@@ -89,9 +89,32 @@ defmodule LiveStoreWeb.ShopLive.Cart do
               <span>Subtotal</span>
               <span>{money(@sub_total)}</span>
             </div>
-            <div class="flex justify-between text-sm mb-2">
-              <span>Shipping</span>
+            <div class="flex justify-between text-sm mb-2 items-center">
+              <span class="flex items-center gap-2">Shipping ({@country})</span>
               <span>{money(@shipping)}</span>
+            </div>
+
+            <div
+              :if={map_size(@shipping_countries) > 1}
+              class="flex justify-between text-sm mb-2 items-center"
+            >
+              <span>Ship To</span>
+              <form>
+                <select
+                  class="w-full border rounded px-2 py-1 text-sm bg-base-100 text-base-content"
+                  value={@country}
+                  phx-change="change_shipping_country"
+                  name="country"
+                >
+                  <option
+                    :for={{country, _cost} <- @shipping_countries}
+                    value={country}
+                    selected={@country == country}
+                  >
+                    {LiveStore.Config.country_name(country)}
+                  </option>
+                </select>
+              </form>
             </div>
             <div class="flex justify-between text-xs my-4 text-base-700">
               <span>Tax determined at checkout</span>
@@ -128,11 +151,20 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   def mount(_params, _session, socket) do
     cart = Store.preload_cart(socket.assigns.cart)
 
+    shipping_countries = LiveStore.Config.shipping_countries()
+
+    country =
+      if Map.has_key?(shipping_countries, "US"),
+        do: "US",
+        else: shipping_countries |> Map.keys() |> List.first()
+
     {:ok,
      socket
      |> assign(:cart, cart)
      |> assign(:sub_total, Store.calculate_total(cart))
-     |> assign(:shipping, (cart.items == [] && 0) || LiveStore.Config.shipping_cost())
+     |> assign(:shipping_countries, shipping_countries)
+     |> assign(:country, country)
+     |> assign(:shipping, (cart.items == [] && 0) || shipping_countries[country])
      |> assign(:stripe_public_key, Application.get_env(:live_store, :stripe_public_key))
      |> assign(:client_secret, nil)}
   end
@@ -141,7 +173,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
   def handle_params(_params, _uri, socket) do
     with :checkout <- socket.assigns.live_action,
          {:ok, %{client_secret: client_secret}} <-
-           Stripe.create_checkout_session(socket.assigns.cart) do
+           Stripe.create_checkout_session(socket.assigns.cart, socket.assigns.country) do
       {:noreply, assign(socket, :client_secret, client_secret)}
     else
       :show ->
@@ -168,7 +200,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
           %CartItem{} = i -> i
         end)
 
-      update_items(socket, items)
+      update_cart(socket, items)
     else
       _error -> {:noreply, put_flash(socket, :error, "Invalid quantity")}
     end
@@ -178,12 +210,26 @@ defmodule LiveStoreWeb.ShopLive.Cart do
     %CartItem{} = item = Enum.find(socket.assigns.cart.items, &(&1.id == id))
     {:ok, _} = Store.delete_cart_item(item)
     items = Enum.reject(socket.assigns.cart.items, &(&1.id == id))
-    update_items(socket, items)
+    update_cart(socket, items)
   end
 
-  defp update_items(socket, items) do
+  def handle_event("change_shipping_country", %{"country" => country}, socket) do
+    shipping =
+      if socket.assigns.cart.items == [] do
+        0
+      else
+        socket.assigns.shipping_countries[country]
+      end
+
+    socket
+    |> assign(:country, country)
+    |> assign(:shipping, shipping)
+    |> update_cart(socket.assigns.cart.items)
+  end
+
+  defp update_cart(socket, items) do
     cart = %Cart{socket.assigns.cart | items: items}
-    shipping = if items == [], do: 0, else: LiveStore.Config.shipping_cost()
+    shipping = if items == [], do: 0, else: socket.assigns.shipping
 
     {:noreply,
      assign(socket, cart: cart, sub_total: Store.calculate_total(cart), shipping: shipping)}

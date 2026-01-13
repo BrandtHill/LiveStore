@@ -32,15 +32,32 @@ defmodule LiveStoreWeb.AdminLive.Settings do
             placeholder={@defaults[:store_email]}
           />
           <div class="flex items-center">
-            <div class="w-32">
-              <.input
-                field={@form[:shipping_cost]}
-                label="Shipping Cost"
-                type="number"
-                placeholder={@defaults[:shipping_cost]}
-              />
+            <div class="w-max">
+              <h3 class="mt-8 mb-2 text-lg font-semibold">Shipping Countries</h3>
+
+              <div class="space-y-2">
+                <.error :for={{msg, _} <- Keyword.get_values(@form.errors, :shipping_countries)}>
+                  {msg}
+                </.error>
+                <.country_selector
+                  :for={{country, cost} <- @shipping_countries}
+                  country={country}
+                  cost={cost}
+                  form={@form}
+                />
+              </div>
+
+              <select
+                name="new_country"
+                class="w-full border rounded phx-3 py-2 bg-base-100 text-base-content"
+              >
+                <option value="">Select country</option>
+                <option :for={{code, name} <- @available_countries} value={code}>
+                  {name}
+                </option>
+              </select>
+              <.button type="button" phx-click="add_country">Add country</.button>
             </div>
-            <b class="pt-3 px-2">{money(@form[:shipping_cost].value)}</b>
           </div>
 
           <.image_upload label="Favicon" key={:favicon} {assigns} />
@@ -83,6 +100,32 @@ defmodule LiveStoreWeb.AdminLive.Settings do
     """
   end
 
+  def country_selector(assigns) do
+    ~H"""
+    <div class="flex items-center gap-2">
+      <div class="w-64">
+        <.input
+          type="number"
+          label={"#{Config.country_name(@country)} Shipping Cost"}
+          name={"settings[shipping_countries][#{@country}]"}
+          value={@cost}
+        />
+      </div>
+
+      <b class="pt-3 px-2 w-20">{money(@form[:shipping_countries].value[@country] || @cost)}</b>
+
+      <.button
+        type="button"
+        phx-click="remove_country"
+        value={@country}
+        class="btn h-8.5 mt-3"
+      >
+        ✕
+      </.button>
+    </div>
+    """
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     config = Config.config()
@@ -93,6 +136,9 @@ defmodule LiveStoreWeb.AdminLive.Settings do
        page_title: "Store Settings",
        form: to_form(Config.changeset(config), as: :settings),
        deleted_images: [],
+       new_country: nil,
+       shipping_countries: Config.shipping_countries(),
+       available_countries: Config.available_countries(),
        config: config,
        defaults: Config.defaults()
      )
@@ -109,10 +155,14 @@ defmodule LiveStoreWeb.AdminLive.Settings do
   end
 
   @impl true
-  def handle_event("validate", %{"settings" => params}, socket) do
+  def handle_event("validate", %{"settings" => params, "new_country" => new_country}, socket) do
     changeset = Config.changeset(socket.assigns.config, params)
 
-    {:noreply, assign(socket, :form, to_form(changeset, as: :settings, action: :validate))}
+    {:noreply,
+     assign(socket,
+       form: to_form(changeset, as: :settings, action: :validate),
+       new_country: if(new_country != "", do: new_country)
+     )}
   end
 
   def handle_event("save", %{"settings" => params}, socket) do
@@ -134,10 +184,18 @@ defmodule LiveStoreWeb.AdminLive.Settings do
     |> Config.changeset(params)
     |> Config.update()
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "Site settings saved successfully")
-     |> push_navigate(to: ~p"/admin")}
+    case Config.changeset(socket.assigns.config, params) do
+      %{valid?: true} = changeset ->
+        Config.update(changeset)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Site settings saved successfully")
+         |> push_navigate(to: ~p"/admin")}
+
+      _changeset ->
+        {:noreply, put_flash(socket, :error, "Changes are not valid")}
+    end
   end
 
   def handle_event("remove_img", %{"value" => key}, socket) do
@@ -149,6 +207,24 @@ defmodule LiveStoreWeb.AdminLive.Settings do
     key = String.to_existing_atom(key)
     [%{ref: ref}] = socket.assigns.uploads[key].entries
     {:noreply, cancel_upload(socket, key, ref)}
+  end
+
+  def handle_event("add_country", _params, socket) do
+    shipping_countries =
+      if socket.assigns.new_country do
+        Map.put(socket.assigns.shipping_countries, socket.assigns.new_country, 500)
+      else
+        socket.assigns.shipping_countries
+      end
+
+    {:noreply, assign(socket, new_country: nil, shipping_countries: shipping_countries)}
+  end
+
+  def handle_event("remove_country", params, socket) do
+    {:noreply,
+     assign(socket,
+       shipping_countries: Map.delete(socket.assigns.shipping_countries, params["value"])
+     )}
   end
 
   defp consume_upload(socket, key) do

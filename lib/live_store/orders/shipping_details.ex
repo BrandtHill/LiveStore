@@ -13,8 +13,8 @@ defmodule LiveStore.Orders.ShippingDetails do
     field :country, :string
   end
 
-  @required_fields [:name, :street, :city, :state, :postal_code, :country]
-  @allowed_fields @required_fields ++ [:phone, :street_additional]
+  @required_fields [:name, :street, :city, :postal_code, :country]
+  @allowed_fields @required_fields ++ [:phone, :state, :street_additional]
 
   @doc false
   def changeset(shipping_details \\ %__MODULE__{}, params) do

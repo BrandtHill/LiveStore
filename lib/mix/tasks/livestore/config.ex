@@ -15,13 +15,17 @@ defmodule Mix.Tasks.Livestore.Config do
       [key, value] ->
         ReleaseTasks.change_config(key, value)
 
+      [key, subkey, value] ->
+        ReleaseTasks.change_config(key, subkey, value)
+
       [] ->
         ReleaseTasks.config()
 
       _ ->
         IO.puts("""
         Run `mix livestore.config` to get current values
-        Run `mix livestore.config "key" "value" to set a value`
+        Run `mix livestore.config "key" "value"` to set a value
+        Run `mix livestore.config "key" "subkey" "value"` to set nested map values (empty string value for delete)
         """)
     end
   end

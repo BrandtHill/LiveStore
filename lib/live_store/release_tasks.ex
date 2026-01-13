@@ -84,11 +84,26 @@ defmodule LiveStore.ReleaseTasks do
         IO.puts("#{key} set successfully")
 
       %Ecto.Changeset{valid?: true} ->
-        IO.puts("#{key} isn't a valid config option")
+        IO.puts("#{key} wasn't changed or isn't a valid config option")
 
       %Ecto.Changeset{valid?: false} = cs ->
         IO.puts("You messed something up. #{inspect(cs.errors, pretty: true)}")
     end
+  end
+
+  def change_config(key, subkey, value) do
+    Application.ensure_all_started(@app)
+
+    key = String.to_atom(key)
+    map = Config.config()[key] || %{}
+
+    map =
+      case value do
+        "" -> Map.delete(map, subkey)
+        _ -> Map.put(map, subkey, value)
+      end
+
+    change_config(key, map)
   end
 
   defp assert_account(email) do

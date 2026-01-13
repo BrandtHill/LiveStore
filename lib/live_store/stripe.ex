@@ -5,7 +5,7 @@ defmodule LiveStore.Stripe do
 
   @table :live_store_stripe
 
-  def create_checkout_session(%Cart{} = cart) do
+  def create_checkout_session(%Cart{} = cart, country \\ "US") do
     line_items =
       Enum.map(cart.items, fn i ->
         %{
@@ -43,14 +43,14 @@ defmodule LiveStore.Stripe do
         enabled: true
       },
       shipping_address_collection: %{
-        allowed_countries: [:US]
+        allowed_countries: [country]
       },
       shipping_options: [
         %{
           shipping_rate_data: %{
             display_name: "Flat rate",
             fixed_amount: %{
-              amount: LiveStore.Config.shipping_cost(),
+              amount: LiveStore.Config.shipping_countries()[country],
               currency: "usd"
             },
             tax_behavior: "exclusive",
