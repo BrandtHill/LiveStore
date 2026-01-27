@@ -27,7 +27,7 @@ defmodule LiveStore.Orders.Order do
       values: [:processing, :shipped, :complete, :canceled, :refunded],
       default: :processing
 
-    embeds_one :shipping_details, ShippingDetails
+    embeds_one :shipping_details, ShippingDetails, on_replace: :update
 
     timestamps()
   end
