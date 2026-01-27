@@ -151,6 +151,8 @@ defmodule LiveStore.Orders do
     Repo.preload(order, [:user, items: [variant: :product]])
   end
 
+  defp preload_order(nil), do: nil
+
   def change_tracking_number(%Order{} = order, tracking_number) do
     Order.changeset(order, %{tracking_number: tracking_number})
   end
