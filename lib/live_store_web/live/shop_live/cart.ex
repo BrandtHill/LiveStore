@@ -227,9 +227,9 @@ defmodule LiveStoreWeb.ShopLive.Cart do
     |> update_cart(socket.assigns.cart.items)
   end
 
-  defp update_cart(socket, items) do
-    cart = %Cart{socket.assigns.cart | items: items}
-    shipping = if items == [], do: 0, else: socket.assigns.shipping
+  defp update_cart(%{assigns: %{cart: %Cart{} = cart, shipping: shipping}} = socket, items) do
+    cart = %Cart{cart | items: items}
+    shipping = if items == [], do: 0, else: shipping
 
     {:noreply,
      assign(socket, cart: cart, sub_total: Store.calculate_total(cart), shipping: shipping)}

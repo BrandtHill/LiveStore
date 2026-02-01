@@ -2,8 +2,9 @@ defmodule LiveStore.Store.Product do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias LiveStore.Uploads.Image
+  alias LiveStore.Store.Category
   alias LiveStore.Store.Variant
+  alias LiveStore.Uploads.Image
 
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
@@ -16,6 +17,8 @@ defmodule LiveStore.Store.Product do
     field :price, :integer
     field :attribute_types, {:array, :string}, default: []
 
+    belongs_to :category, Category
+
     has_many :images, Image, preload_order: [desc: :priority]
     has_many :variants, Variant, on_replace: :delete
 
@@ -24,7 +27,7 @@ defmodule LiveStore.Store.Product do
 
   @required_fields [:name, :slug, :price]
 
-  @allowed_fields @required_fields ++ [:description, :attribute_types]
+  @allowed_fields @required_fields ++ [:description, :attribute_types, :category_id]
 
   @doc false
   def changeset(product \\ %__MODULE__{}, params) do
@@ -38,6 +41,7 @@ defmodule LiveStore.Store.Product do
     |> validate_number(:price, greater_than_or_equal_to: 0)
     |> validate_format(:slug, ~r/^[a-z0-9-]*$/)
     |> unsafe_validate_unique(:slug, LiveStore.Repo)
+    |> assoc_constraint(:category)
     |> unique_constraint(:slug)
   end
 
