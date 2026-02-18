@@ -11,6 +11,7 @@ defmodule LiveStore.Store do
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Cart
   alias LiveStore.Store.CartItem
+  alias LiveStore.Store.Category
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
 
@@ -28,6 +29,16 @@ defmodule LiveStore.Store do
     Repo.all(
       from p in Product,
         join: v in assoc(p, :variants),
+        preload: [{:variants, v}, :images]
+    )
+  end
+
+  def query_products_by_category(%Category{path: path}) do
+    Repo.all(
+      from p in Product,
+        join: v in assoc(p, :variants),
+        join: c in assoc(p, :category),
+        where: fragment("? <@ ?", c.path, ^path),
         preload: [{:variants, v}, :images]
     )
   end
@@ -60,6 +71,82 @@ defmodule LiveStore.Store do
 
   def preload_variants(%Product{} = product) do
     Repo.preload(product, :variants, force: true)
+  end
+
+  ## Categories
+
+  def get_categories(parent \\ nil)
+
+  def get_categories(nil), do: get_categories("")
+
+  def get_categories(%Category{path: path}), do: get_categories(path)
+
+  def get_categories(path) when is_binary(path) do
+    Repo.all(
+      from [categories: c] in categories_query(),
+        where: fragment("nlevel(?) = nlevel(?) + 1", c.path, ^path),
+        where: fragment("? <@ ?", c.path, ^path),
+        order_by: c.name
+    )
+  end
+
+  def get_category_ancestry(nil),
+    do: []
+
+  def get_category_ancestry(%Product{category_id: nil}),
+    do: []
+
+  def get_category_ancestry(%Product{category_id: id}),
+    do: get_category_ancestry(from c in Category, where: [id: ^id], select: c.path)
+
+  def get_category_ancestry(%Category{path: path}),
+    do: get_category_ancestry(path)
+
+  def get_category_ancestry(path) do
+    clause =
+      if is_binary(path),
+        do: dynamic([c], fragment("? @> ?", c.path, ^path)),
+        else: dynamic([c], fragment("? @> ?", c.path, subquery(path)))
+
+    Repo.all(
+      from c in Category,
+        where: ^clause,
+        order_by: fragment("nlevel(?)", c.path)
+    )
+  end
+
+  def get_category(id) do
+    Repo.one(
+      from [categories: c] in categories_query(),
+        where: [id: ^id]
+    )
+  end
+
+  def get_category_by_path(path) do
+    Repo.one(
+      from [categories: c] in categories_query(),
+        where: [path: ^path]
+    )
+  end
+
+  defp categories_query() do
+    from c in Category,
+      as: :categories,
+      select: %{c | leaf?: not exists(descendants_query())}
+  end
+
+  defp descendants_query() do
+    from c in Category,
+      where:
+        fragment("? <@ ?", c.path, parent_as(:categories).path) and
+          fragment("nlevel(?) > nlevel(?)", c.path, parent_as(:categories).path),
+      select: 1
+  end
+
+  def insert_category(name, parent \\ nil) do
+    path = Category.path_from_parent(parent, name)
+    changeset = Category.changeset(%{name: name, path: path})
+    Repo.insert(changeset)
   end
 
   ## Variants

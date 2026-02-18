@@ -4,7 +4,7 @@ LiveStore is a self-hosted open source Phoenix LiveView e-commerce store.
 
   * Stripe for payment processing
   * Sendgrid for emails
-  * PostgreSQL
+  * PostgreSQL 13+
   * Vix (Vips NIF) for image processing
 
 Images are uploaded to and hosted from the server, by default in the `/uploads` directory in the root of the project.

@@ -12,6 +12,7 @@ defmodule LiveStore.Store.Category do
   schema "categories" do
     field :name, :string
     field :path, :string
+    field :leaf?, :boolean, virtual: true
 
     has_many :products, Product
 
@@ -25,7 +26,7 @@ defmodule LiveStore.Store.Category do
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
     |> validate_length(:name, max: 255)
-    |> validate_format(:path, ~r/^([a-z0-9-]+\.)*[a-z0-9-]+$/)
+    |> validate_format(:path, ~r/^([a-z0-9_]+\.)*[a-z0-9_]+$/)
     |> prepare_changes(fn
       %{action: :delete} = c -> reparent_children(c)
       %{action: :update} = c -> update_children(c)
@@ -36,15 +37,24 @@ defmodule LiveStore.Store.Category do
   end
 
   def path_from_parent(%__MODULE__{path: path} = _parent, name) do
-    path <> "." <> Product.slug_from_name(name)
+    path <> "." <> label_from_name(name)
   end
 
   def path_from_parent(parent, name) when is_binary(parent) do
-    parent <> "." <> Product.slug_from_name(name)
+    parent <> "." <> label_from_name(name)
   end
 
   def path_from_parent(nil, name) do
-    Product.slug_from_name(name)
+    label_from_name(name)
+  end
+
+  def label_from_name(name) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/\s+/, "_")
+    |> String.replace(~r/[^a-z0-9_]/, "")
+    |> String.replace(~r/_+/, "_")
+    |> String.trim("_")
   end
 
   defp reparent_children(%{repo: repo, data: %{path: path}} = changeset) do

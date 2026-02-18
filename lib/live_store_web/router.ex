@@ -30,6 +30,7 @@ defmodule LiveStoreWeb.Router do
     live_session :shop, on_mount: [{LiveStoreWeb.UserAuth, :mount_current_user}] do
       live "/products", ShopLive.Index, :index
       live "/products/:slug", ShopLive.ProductPage
+      live "/categories/*categories", ShopLive.Index, :categories
       live "/cart", ShopLive.Cart, :show
       live "/cart/checkout", ShopLive.Cart, :checkout
       live "/order/success", OrderLive.Success
