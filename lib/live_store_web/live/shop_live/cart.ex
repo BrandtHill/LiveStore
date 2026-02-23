@@ -191,7 +191,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
 
   @impl true
   def handle_event("quantity", %{"item" => %{"id" => id, "quantity" => quantity}}, socket) do
-    with quantity when is_integer(quantity) <- String.to_integer(quantity),
+    with {quantity, _} when is_integer(quantity) <- Integer.parse(quantity),
          %CartItem{id: id} = item <- Enum.find(socket.assigns.cart.items, &(&1.id == id)),
          {:ok, %CartItem{quantity: ^quantity} = item} <- Store.edit_cart_item(item, quantity) do
       items =
