@@ -41,10 +41,13 @@ defmodule LiveStoreWeb.Router do
         live "/", Index, :index
         live "/settings", Settings, :edit
 
+        live "/products/categories/:id/new", Category.Form, :new
+        live "/products/categories/:id/edit", Category.Form, :edit
+        live "/products/categories/*categories", Category.Index, :index
+
         live "/products", Product.Index, :index
         live "/products/new", Product.Form, :new
         live "/products/:id/edit", Product.Form, :edit
-
         live "/products/:id", Product.Show, :show
 
         live "/products/:id/variants", Variant.Index, :index

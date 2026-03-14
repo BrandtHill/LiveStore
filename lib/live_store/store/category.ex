@@ -27,6 +27,7 @@ defmodule LiveStore.Store.Category do
     |> validate_required(@required_fields)
     |> validate_length(:name, max: 255)
     |> validate_format(:path, ~r/^([a-z0-9_]+\.)*[a-z0-9_]+$/)
+    |> validate_format(:path, ~r/^(?!\w+\.(edit|new)$).*/, message: "is unreachable")
     |> prepare_changes(fn
       %{action: :delete} = c -> reparent_children(c)
       %{action: :update} = c -> update_children(c)
@@ -37,19 +38,37 @@ defmodule LiveStore.Store.Category do
   end
 
   def path_from_parent(%__MODULE__{path: path} = _parent, name) do
-    path <> "." <> label_from_name(name)
+    path_from_parent(path, name)
   end
 
-  def path_from_parent(parent, name) when is_binary(parent) do
-    parent <> "." <> label_from_name(name)
+  def path_from_parent(path, name) when is_binary(path) do
+    path <> "." <> label_from_name(name)
   end
 
   def path_from_parent(nil, name) do
     label_from_name(name)
   end
 
+  def path_from_self(%__MODULE__{path: old_path} = _self, name) do
+    path_from_self(old_path, name)
+  end
+
+  def path_from_self(path, name) when is_binary(path) do
+    label = label_from_name(name)
+
+    path
+    |> String.split(".")
+    |> List.replace_at(-1, label)
+    |> Enum.join(".")
+  end
+
+  def path_from_self(nil, name) do
+    label_from_name(name)
+  end
+
   def label_from_name(name) do
     name
+    |> to_string()
     |> String.downcase()
     |> String.replace(~r/\s+/, "_")
     |> String.replace(~r/[^a-z0-9_]/, "")

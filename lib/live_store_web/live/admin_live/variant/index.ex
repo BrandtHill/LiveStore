@@ -28,15 +28,15 @@ defmodule LiveStoreWeb.AdminLive.Variant.Index do
         </:col>
 
         <:action :let={{_id, variant}}>
-          <.link patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.link>
+          <.button patch={~p"/admin/products/#{@product}/variants/#{variant.id}/edit"}>Edit</.button>
         </:action>
         <:action :let={{id, variant}}>
-          <.link
+          <.button
             phx-click={JS.push("delete", value: %{id: variant.id}) |> hide("##{id}")}
             data-confirm="Are you sure?"
           >
             Delete
-          </.link>
+          </.button>
         </:action>
       </.table>
 

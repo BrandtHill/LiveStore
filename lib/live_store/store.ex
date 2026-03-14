@@ -55,7 +55,7 @@ defmodule LiveStore.Store do
     |> Repo.preload([:variants, :images])
   end
 
-  def upsert_product(product \\ %Product{}, params) do
+  def upsert_product(%Product{} = product, params) do
     product
     |> Product.changeset(params)
     |> Repo.insert_or_update()
@@ -143,10 +143,20 @@ defmodule LiveStore.Store do
       select: 1
   end
 
-  def insert_category(name, parent \\ nil) do
-    path = Category.path_from_parent(parent, name)
-    changeset = Category.changeset(%{name: name, path: path})
-    Repo.insert(changeset)
+  def upsert_category(%Category{} = category, params) do
+    category
+    |> Category.changeset(params)
+    |> Repo.insert_or_update()
+  end
+
+  def delete_category(%Category{} = category) do
+    category
+    |> Category.changeset(%{})
+    |> Repo.delete()
+  end
+
+  def change_category(%Category{} = category, params \\ %{}) do
+    Category.changeset(category, params)
   end
 
   ## Variants

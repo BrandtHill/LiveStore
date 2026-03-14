@@ -2,7 +2,7 @@ defmodule LiveStoreWeb.OrderLive.Success do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Orders
-  alias LiveStoreWeb.OrderLive.OrderComponents
+  alias LiveStoreWeb.OrderComponents
 
   @impl true
   def render(assigns) do

@@ -3,7 +3,7 @@ defmodule LiveStoreWeb.OrderLive.Index do
 
   alias LiveStore.Orders
 
-  alias LiveStoreWeb.OrderLive.OrderComponents
+  alias LiveStoreWeb.OrderComponents
 
   @impl true
   def render(assigns) do

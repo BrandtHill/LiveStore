@@ -1,4 +1,4 @@
-defmodule LiveStoreWeb.OrderLive.OrderComponents do
+defmodule LiveStoreWeb.OrderComponents do
   use LiveStoreWeb, :html
 
   alias LiveStore.Orders.Order

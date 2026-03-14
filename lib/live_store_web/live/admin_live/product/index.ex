@@ -10,6 +10,9 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
       <.header>
         Listing Products
         <:actions>
+          <.button variant="primary" navigate={~p"/admin/products/categories"}>
+            <.icon name="hero-queue-list" /> Categories
+          </.button>
           <.button variant="primary" navigate={~p"/admin/products/new"}>
             <.icon name="hero-plus" /> New Product
           </.button>
@@ -22,6 +25,13 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
         row_click={fn {_id, product} -> JS.navigate(~p"/admin/products/#{product}") end}
       >
         <:col :let={{_id, product}} label="Name">{product.name}</:col>
+        <:col :let={{_id, product}} label="Photo">
+          <img
+            :if={length(product.images) > 0}
+            src={image_path(product)}
+            class="aspect-square object-cover rounded-lg w-20"
+          />
+        </:col>
         <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
         <:col :let={{_id, product}} label="Description">{preview(product.description)}</:col>
         <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
@@ -41,21 +51,21 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
         </:col>
 
         <:action :let={{_id, product}}>
-          <.link navigate={~p"/admin/products/#{product}/variants"}>Manage Variants</.link>
+          <.button navigate={~p"/admin/products/#{product}/variants"}>Manage Variants</.button>
         </:action>
         <:action :let={{_id, product}}>
           <div class="sr-only">
-            <.link navigate={~p"/admin/products/#{product}"}>Show</.link>
+            <.button navigate={~p"/admin/products/#{product}"}>Show</.button>
           </div>
-          <.link patch={~p"/admin/products/#{product}/edit"}>Edit</.link>
+          <.button patch={~p"/admin/products/#{product}/edit"}>Edit</.button>
         </:action>
         <:action :let={{id, product}}>
-          <.link
+          <.button
             phx-click={JS.push("delete", value: %{id: product.id}) |> hide("##{id}")}
             data-confirm="Are you sure?"
           >
             Delete
-          </.link>
+          </.button>
         </:action>
       </.table>
     </Layouts.app>
@@ -65,7 +75,9 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
-     socket |> stream(:products, Store.list_products()) |> assign(:page_title, "Listing products")}
+     socket
+     |> stream(:products, Store.list_products())
+     |> assign(:page_title, "Listing products")}
   end
 
   @impl true
@@ -75,4 +87,6 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
 
     {:noreply, stream_delete(socket, :products, product)}
   end
+
+  defp image_path(%{images: [%{path: path} | _]}), do: ~p"/uploads/#{path}"
 end

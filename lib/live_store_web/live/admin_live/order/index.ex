@@ -1,7 +1,7 @@
 defmodule LiveStoreWeb.AdminLive.Order.Index do
   use LiveStoreWeb, :live_view
 
-  alias LiveStoreWeb.OrderLive.OrderComponents
+  alias LiveStoreWeb.OrderComponents
 
   alias LiveStore.Orders
   alias LiveStore.Orders.Order
