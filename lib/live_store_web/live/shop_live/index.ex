@@ -10,7 +10,7 @@ defmodule LiveStoreWeb.ShopLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app {assigns}>
+    <Layouts.app {assigns} render_footer={false}>
       <.breadcrumb ancestors={@ancestors} categories={@categories} />
 
       <.header>

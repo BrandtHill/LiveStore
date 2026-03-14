@@ -7,6 +7,7 @@ defmodule LiveStore.Accounts do
   alias LiveStore.Repo
 
   alias LiveStore.Accounts.ContactForm
+  alias LiveStore.Accounts.InStockNotification
   alias LiveStore.Accounts.User
   alias LiveStore.Accounts.UserToken
   alias LiveStore.Accounts.UserNotifier
@@ -52,10 +53,10 @@ defmodule LiveStore.Accounts do
 
   ## Examples
 
-      iex> register_user(%{field: value})
+      iex> register_user(%{email: value})
       {:ok, %User{}}
 
-      iex> register_user(%{field: bad_value})
+      iex> register_user(%{email: bad_email_value})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -205,6 +206,22 @@ defmodule LiveStore.Accounts do
   def delete_user_session_token(token) do
     Repo.delete_all(from(UserToken, where: [token: ^token, context: "session"]))
     :ok
+  end
+
+  def create_in_stock_notification(%User{} = user, variant) do
+    user
+    |> InStockNotification.new_changeset(variant)
+    |> Repo.insert()
+  end
+
+  def create_in_stock_notification(email, variant) when is_binary(email) do
+    with nil <- get_user_by_email(email),
+         {:ok, %User{} = user} <- register_user(%{email: email}) do
+      create_in_stock_notification(user, variant)
+    else
+      %User{} = user -> create_in_stock_notification(user, variant)
+      error -> error
+    end
   end
 
   def make_user_admin(user) do
