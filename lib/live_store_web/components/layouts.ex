@@ -105,7 +105,7 @@ defmodule LiveStoreWeb.Layouts do
                 <.icon name="hero-shopping-cart" />
 
                 <span
-                  :if={length(@cart.items) > 0}
+                  :if={@cart.items != []}
                   class="absolute -top-1 -right-0.5 items-center px-1 py-0.5 text-xs font-bold leading-none bg-red-400 rounded-full"
                 >
                   {Enum.sum_by(@cart.items, & &1.quantity)}

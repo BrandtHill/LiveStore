@@ -5,19 +5,23 @@ defmodule LiveStoreWeb.CategoryComponents do
 
   attr :ancestors, :list, default: []
   attr :categories, :list, default: []
+  attr :product, :map, default: nil
 
   def breadcrumb(assigns) do
     ~H"""
     <nav aria-label="Breadcrumb" class="breadcrumb min-h-6 mb-2">
       <ol class="flex gap-2 text-sm font-semibold">
         <li>
-          <.link patch={~p"/products"} class="hover:underline">All Products</.link>
+          <.link {nav_or_patch(@product, ~p"/products")} class="hover:underline">All Products</.link>
         </li>
 
         <%= for c <- @ancestors do %>
           <li>/</li>
           <li>
-            <.link patch={~p"/categories/#{category_to_url(c)}"} class="hover:underline">
+            <.link
+              {nav_or_patch(@product, ~p"/categories/#{category_to_url(c)}")}
+              class="hover:underline"
+            >
               {c.name}
             </.link>
           </li>
@@ -52,6 +56,15 @@ defmodule LiveStoreWeb.CategoryComponents do
                 </li>
               <% end %>
             </ul>
+          </li>
+        <% end %>
+
+        <%= if @product do %>
+          <li>/</li>
+          <li>
+            <.link patch={~p"/products/#{@product.slug}"} class="hover:underline">
+              {@product.name}
+            </.link>
           </li>
         <% end %>
       </ol>
@@ -97,6 +110,9 @@ defmodule LiveStoreWeb.CategoryComponents do
     </.link>
     """
   end
+
+  defp nav_or_patch(nil = _product, url), do: [patch: url]
+  defp nav_or_patch(_product, url), do: [navigate: url]
 
   def category_to_url(%Category{path: path}) do
     path

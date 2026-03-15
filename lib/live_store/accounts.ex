@@ -208,6 +208,10 @@ defmodule LiveStore.Accounts do
     :ok
   end
 
+  def preload_in_stock_notifications(user) do
+    Repo.preload(user, :in_stock_notifications)
+  end
+
   def create_in_stock_notification(%User{} = user, variant) do
     user
     |> InStockNotification.new_changeset(variant)

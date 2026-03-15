@@ -18,12 +18,16 @@ defmodule LiveStore.Accounts.InStockNotification do
 
   @fields [:user_id, :variant_id]
 
-  def new_changeset(%User{id: user_id}, %Variant{id: variant_id}) do
-    %__MODULE__{}
-    |> change(user_id: user_id, variant_id: variant_id)
+  def changeset(in_stock_notif \\ %__MODULE__{}, params) do
+    in_stock_notif
+    |> change(params)
     |> validate_required(@fields)
     |> assoc_constraint(:user)
     |> assoc_constraint(:variant)
-    |> unique_constraint([:user_id, :variant])
+    |> unique_constraint([:user_id, :variant_id])
+  end
+
+  def new_changeset(%User{id: user_id}, %Variant{id: variant_id}) do
+    changeset(user_id: user_id, variant_id: variant_id)
   end
 end

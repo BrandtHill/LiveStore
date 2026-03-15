@@ -13,6 +13,7 @@ defmodule LiveStore do
       alias LiveStore.Repo
       alias LiveStore.Accounts
       alias LiveStore.Accounts.ContactForm
+      alias LiveStore.Accounts.InStockNotification
       alias LiveStore.Accounts.User
       alias LiveStore.Accounts.UserNotifier
       alias LiveStore.Accounts.UserToken

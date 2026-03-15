@@ -2,6 +2,8 @@ defmodule LiveStore.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias LiveStore.Accounts.InStockNotification
+
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec
@@ -12,6 +14,8 @@ defmodule LiveStore.Accounts.User do
     field :authenticated_at, :utc_datetime_usec, virtual: true
     field :admin, :boolean, default: false
     field :stripe_id, :string
+
+    has_many :in_stock_notifications, InStockNotification
 
     timestamps()
   end

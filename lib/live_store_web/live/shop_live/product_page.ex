@@ -1,15 +1,20 @@
 defmodule LiveStoreWeb.ShopLive.ProductPage do
   use LiveStoreWeb, :live_view
 
+  alias LiveStore.Accounts
   alias LiveStore.Store
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Product
   alias LiveStore.Store.Variant
 
+  import LiveStoreWeb.CategoryComponents
+
   @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app {assigns}>
+      <.breadcrumb {assigns} />
+
       <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 px-6 py-8 max-w-6xl mx-auto">
         <div>
           <.live_component
@@ -70,12 +75,23 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
           </div>
 
           <div class="flex space-x-4">
-            <.button
-              :if={@selected_variant && @selected_variant.stock > 0}
-              phx-click="add_to_cart"
-            >
-              Add to Cart
-            </.button>
+            <%= case @selected_variant do %>
+              <% nil -> %>
+              <% %Variant{stock: 0} -> %>
+                <.in_stock_notification {assigns} />
+              <% %Variant{id: id} -> %>
+                <div class="relative">
+                  <.button phx-click="add_to_cart">Add to Cart</.button>
+
+                  <span
+                    :if={item = Enum.find(@cart.items, &(&1.variant_id == id))}
+                    class="absolute -top-1 -right-0.5 items-center px-1 py-0.5
+                    text-xs font-bold leading-none text-content bg-primary rounded-full"
+                  >
+                    {item.quantity}
+                  </span>
+                </div>
+            <% end %>
 
             <.link
               class={[
@@ -94,6 +110,34 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
     """
   end
 
+  defp in_stock_notification(assigns) do
+    ~H"""
+    <%= if MapSet.member?(@in_stock_notifications, @selected_variant.id) do %>
+      <div>
+        <.icon name="hero-check-circle" />
+        <span class="text-sm font-bold">
+          You'll receive an email when this item comes back in stock.
+        </span>
+      </div>
+    <% else %>
+      <.form
+        :let={form}
+        for={%{"email" => @current_user && @current_user.email}}
+        phx-submit="create_notif"
+      >
+        <.input
+          type="text"
+          field={form[:email]}
+          label="Notify me when this item is back in stock"
+          placeholder="Email address"
+          disabled={!!@current_user}
+        />
+        <.button>Notify me</.button>
+      </.form>
+    <% end %>
+    """
+  end
+
   @impl true
   def mount(%{"slug" => slug} = _params, _session, socket) do
     product = Store.get_product_by_slug!(slug)
@@ -106,10 +150,15 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
       socket
       |> assign(:index, 0)
       |> assign(:product, product)
+      |> assign(:ancestors, Store.get_category_ancestry(product))
       |> assign(:selected_variant, nil)
       |> assign(:added_to_cart, false)
       |> assign(:attribute_map, attribute_map)
       |> assign(:selected_attributes, selected_attributes)
+      |> assign(
+        :in_stock_notifications,
+        get_existing_notifs(product, socket.assigns.current_user)
+      )
 
     {:ok, socket}
   end
@@ -174,6 +223,39 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   def handle_event("add_to_cart", _params, socket) do
     {:ok, cart} = Store.add_to_cart(socket.assigns.cart, socket.assigns.selected_variant)
     {:noreply, assign(socket, cart: cart, added_to_cart: true)}
+  end
+
+  def handle_event("create_notif", params, socket) do
+    case Accounts.create_in_stock_notification(
+           socket.assigns.current_user || params["email"],
+           socket.assigns.selected_variant
+         ) do
+      {:ok, notif} ->
+        {:noreply,
+         socket
+         |> update(:in_stock_notifications, &MapSet.put(&1, notif.variant_id))
+         |> put_flash(:info, "In stock notification created")}
+
+      {:error, %{errors: [{:user_id, _}]} = changeset} ->
+        variant_id = Ecto.Changeset.get_field(changeset, :variant_id)
+
+        {:noreply,
+         socket
+         |> update(:in_stock_notifications, &MapSet.put(&1, variant_id))
+         |> put_flash(:info, "In stock notifications already existed for this item")}
+
+      {:error, %{errors: [{:email, _}]} = _changeset} ->
+        {:noreply, socket |> put_flash(:error, "Bad email format")}
+    end
+  end
+
+  defp get_existing_notifs(_product, nil), do: MapSet.new()
+
+  defp get_existing_notifs(product, user) do
+    user = Accounts.preload_in_stock_notifications(user)
+    all_variants = MapSet.new(product.variants, & &1.id)
+    all_notifs = MapSet.new(user.in_stock_notifications, & &1.variant_id)
+    MapSet.intersection(all_variants, all_notifs)
   end
 
   defp create_attribute_map(variants, selected_attributes) do
