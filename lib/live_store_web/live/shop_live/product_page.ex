@@ -28,7 +28,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
         <div class="space-y-4">
           <h1 class="text-3xl font-bold text-base-content">{@product.name}</h1>
           <div class="prose prose-sm max-w-none">
-            {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
+            {raw(render_markdown(@product.description))}
           </div>
 
           <div>
@@ -49,23 +49,35 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
           <div class="space-y-4 mt-6">
             <form>
-              <div :for={attr_type <- @product.attribute_types} class="pb-4">
-                <.label>{attr_type}</.label>
-                <select
-                  name={"attributes[#{attr_type}]"}
-                  phx-change="select_attribute"
-                  class="w-full border rounded phx-3 py-2 bg-base-100 text-base-content"
-                >
-                  <option value="">Choose {attr_type}...</option>
-                  <option
-                    :for={{attr_val, disabled?} <- @attribute_map[attr_type]}
-                    value={attr_val}
-                    disabled={disabled?}
-                    selected={@selected_attributes[attr_type] == attr_val}
+              <div :for={attr_type <- @product.attribute_types} class="pb-4 flex">
+                <div class="w-full">
+                  <.label>{attr_type}</.label>
+                  <select
+                    name={"attributes[#{attr_type}]"}
+                    phx-change="select_attribute"
+                    phx-hook="ResetSelect"
+                    id={"select-#{dom_id(attr_type)}"}
+                    class="w-full border rounded px-3 py-2 bg-base-100 text-base-content"
                   >
-                    {attr_val}
-                  </option>
-                </select>
+                    <option value="">Choose {attr_type}...</option>
+                    <option
+                      :for={{attr_val, disabled?} <- @attribute_map[attr_type]}
+                      value={attr_val}
+                      disabled={disabled?}
+                      selected={@selected_attributes[attr_type] == attr_val}
+                    >
+                      {attr_val}
+                    </option>
+                  </select>
+                </div>
+                <.button
+                  type="button"
+                  phx-click={JS.dispatch("reset-select", to: "#select-#{dom_id(attr_type)}")}
+                  value={attr_type}
+                  class="mx-1 mt-6 h-10.5 px-1 btn btn-soft"
+                >
+                  <.icon name="hero-x-mark" />
+                </.button>
               </div>
             </form>
 
@@ -76,7 +88,6 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
           <div class="flex space-x-4">
             <%= case @selected_variant do %>
-              <% nil -> %>
               <% %Variant{stock: 0} -> %>
                 <.in_stock_notification {assigns} />
               <% %Variant{id: id} -> %>
@@ -91,6 +102,8 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
                     {item.quantity}
                   </span>
                 </div>
+              <% _nil -> %>
+                <% :noop %>
             <% end %>
 
             <.link

@@ -36,6 +36,18 @@ Hooks.ResizeableTextarea = {
   }
 }
 
+Hooks.ResetSelect = {
+  mounted() {
+    this.el.addEventListener("reset-select", () => {
+      this.el.value = ""
+
+      this.el.dispatchEvent(
+        new Event("change", { bubbles: true })
+      )
+    })
+  }
+}
+
 Hooks.StripeCheckout = {
   async mounted() {
     const pubKey = this.el.dataset.stripePublicKey

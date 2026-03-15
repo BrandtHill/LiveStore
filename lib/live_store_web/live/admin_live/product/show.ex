@@ -21,7 +21,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Show do
         <:item title="URL">{"/products/#{@product.slug}"}</:item>
         <:item title="Description">
           <div class="prose prose-sm max-w-none">
-            {raw(HtmlSanitizeEx.markdown_html(Earmark.as_html!(@product.description || "")))}
+            {raw(render_markdown(@product.description))}
           </div>
         </:item>
         <:item title="Price">{money(@product.price)}</:item>

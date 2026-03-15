@@ -638,4 +638,21 @@ defmodule LiveStoreWeb.CoreComponents do
       [String.slice(text, 0, 120), "..."]
     end
   end
+
+  def dom_id(value) do
+    value
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+  end
+
+  def render_markdown(markdown) do
+    markdown
+    |> to_string()
+    |> Earmark.as_html!()
+    |> HtmlSanitizeEx.markdown_html()
+    |> String.replace(
+      ~r/<a href="(\/[^"]*)">/,
+      ~s(<a href="\\1" data-phx-link="redirect" data-phx-link-state="push">)
+    )
+  end
 end
