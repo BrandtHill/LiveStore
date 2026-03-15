@@ -209,7 +209,7 @@ defmodule LiveStore.Accounts do
   end
 
   def preload_in_stock_notifications(user) do
-    Repo.preload(user, :in_stock_notifications)
+    Repo.preload(user, in_stock_notifications: [variant: :product])
   end
 
   def create_in_stock_notification(%User{} = user, variant) do
@@ -226,6 +226,15 @@ defmodule LiveStore.Accounts do
       %User{} = user -> create_in_stock_notification(user, variant)
       error -> error
     end
+  end
+
+  def delete_in_stock_notification(%User{} = user, %InStockNotification{id: id}) do
+    delete_in_stock_notification(user, id)
+  end
+
+  def delete_in_stock_notification(%User{id: user_id}, id) do
+    Repo.delete_all(from(InStockNotification, where: [id: ^id, user_id: ^user_id]))
+    :ok
   end
 
   def make_user_admin(user) do

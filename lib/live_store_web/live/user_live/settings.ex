@@ -31,6 +31,34 @@ defmodule LiveStoreWeb.UserLive.Settings do
 
         <div class="divider" />
 
+        <.label>In Stock Notifications</.label>
+        <div
+          :for={notif <- @current_user.in_stock_notifications}
+          id={"notif-#{notif.id}"}
+          class="px-4 py-1 m-2 flex flex-row items-start gap-4 flex-1
+          h-18 border border-primary rounded-box"
+        >
+          <div class="flex-1">
+            <div class="text-sm font-semibold">{notif.variant.product.name}</div>
+            <span
+              :for={%{type: type, value: value} <- notif.variant.attributes}
+              class="text-sm font-thin"
+            >
+              {type}: {value}{if List.last(notif.variant.attributes).type != type, do: ","}
+            </span>
+            <div class="text-xs">SKU: {notif.variant.sku}</div>
+          </div>
+          <.button
+            phx-click={JS.push("delete_notif", value: %{id: notif.id}) |> hide("#notif-#{notif.id}")}
+            phx-value-id={notif.id}
+            class="btn btn-ghost btn-soft btn-error btn-xs py-1 h-full"
+          >
+            <.icon name="hero-x-mark" class="size-6" />
+          </.button>
+        </div>
+
+        <div class="divider" />
+
         <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
           <.input
             field={@email_form[:email]}
@@ -62,6 +90,7 @@ defmodule LiveStoreWeb.UserLive.Settings do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
+
     email_changeset = Accounts.change_user_email(user, %{}, validate_unique: false)
 
     socket =
@@ -69,6 +98,7 @@ defmodule LiveStoreWeb.UserLive.Settings do
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:trigger_submit, false)
+      |> update(:current_user, &Accounts.preload_in_stock_notifications/1)
 
     {:ok, socket}
   end
@@ -104,5 +134,10 @@ defmodule LiveStoreWeb.UserLive.Settings do
       changeset ->
         {:noreply, assign(socket, :email_form, to_form(changeset, action: :insert))}
     end
+  end
+
+  def handle_event("delete_notif", %{"id" => id}, socket) do
+    :ok = Accounts.delete_in_stock_notification(socket.assigns.current_user, id)
+    {:noreply, socket}
   end
 end

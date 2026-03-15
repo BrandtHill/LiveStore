@@ -145,7 +145,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
           placeholder="Email address"
           disabled={!!@current_user}
         />
-        <.button>Notify me</.button>
+        <.button phx-disable-with="Saving...">Notify me</.button>
       </.form>
     <% end %>
     """
