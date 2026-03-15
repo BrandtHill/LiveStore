@@ -27,35 +27,37 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
         </.header>
 
         <div class="mb-4">
-          <.admin_breadcrumb ancestors={@ancestors} categories={@categories} />
+          <.admin_breadcrumb ancestors={@ancestors} />
         </div>
 
-        <div :if={@categories == []} class="text-sm text-base-content">
-          This is a leaf category that products can be added
-        </div>
-
-        <.table
-          :if={@categories != []}
-          id="categories"
-          rows={@categories}
-          row_click={fn c -> JS.navigate(~p"/admin/products/categories/#{category_to_url(c)}") end}
-        >
-          <:col :let={category} label="Name">{category.name}</:col>
-          <:col :let={category} label="Path">{category.path}</:col>
-          <:action :let={category}>
-            <.button navigate={~p"/admin/products/categories/#{category}/edit"}>Edit</.button>
-          </:action>
-          <:action :let={category}>
-            <.button
-              type="button"
-              phx-click="delete"
-              phx-value-id={category.id}
-              data-confirm="Are you sure? Child categories will be reparented."
-            >
-              Delete
-            </.button>
-          </:action>
-        </.table>
+        <%= if @parent && @parent.leaf? do %>
+          <div class="text-sm font-semibold mx-2 text-base-content">
+            <p>This is a leaf category that products can be added to.</p>
+            <p>Or, a new leaf category can be created to turn this into a parent category.</p>
+          </div>
+        <% else %>
+          <.table
+            id="categories"
+            rows={@streams.categories}
+            row_click={
+              fn {_, c} -> JS.navigate(~p"/admin/products/categories/#{category_to_url(c)}") end
+            }
+          >
+            <:col :let={{_id, category}} label="Name">{category.name}</:col>
+            <:col :let={{_id, category}} label="Path">{category.path}</:col>
+            <:action :let={{_id, category}}>
+              <.button navigate={~p"/admin/products/categories/#{category}/edit"}>Edit</.button>
+            </:action>
+            <:action :let={{id, category}}>
+              <.button
+                phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
+                data-confirm="Are you sure? Child categories will be reparented."
+              >
+                Delete
+              </.button>
+            </:action>
+          </.table>
+        <% end %>
 
         <.back navigate={back_url(@ancestors)}>Back</.back>
       </div>
@@ -65,21 +67,24 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, stream(socket, :categories, [])}
   end
 
   @impl true
-  def handle_params(%{"categories" => url_segments} = _params, _url, socket) do
-    with ltree_path when ltree_path != "" <- url_segments_to_category_ltree(url_segments),
-         [_ | _] = ancestors <- Store.get_category_ancestry(ltree_path),
-         %Category{} = parent <- List.last(ancestors) do
-      categories = Store.get_categories(parent)
-      parent = %Category{parent | leaf?: categories == []}
+  def handle_params(%{"categories" => [] = _url_segments} = _params, _url, socket) do
+    {:noreply, socket |> assign(parent: nil, ancestors: []) |> update_categories()}
+  end
 
-      {:noreply, assign(socket, ancestors: ancestors, categories: categories, parent: parent)}
-    else
-      "" -> {:noreply, socket |> assign(parent: nil, ancestors: []) |> update_categories()}
-      _ -> {:noreply, push_patch(socket, to: ~p"/admin/products/categories")}
+  def handle_params(%{"categories" => url_segments} = _params, _url, socket) do
+    case url_segments |> url_segments_to_ltree() |> Store.get_category_ancestry() do
+      [] ->
+        {:noreply, push_patch(socket, to: ~p"/admin/products/categories")}
+
+      [_ | _] = ancestors ->
+        {:noreply,
+         socket
+         |> assign(ancestors: ancestors, parent: List.last(ancestors))
+         |> update_categories()}
     end
   end
 
@@ -89,11 +94,18 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
 
     {:ok, _category} = Store.delete_category(category)
 
-    {:noreply, update_categories(socket)}
+    {:noreply, socket |> update_categories()}
   end
 
   defp update_categories(socket) do
-    assign(socket, categories: Store.get_categories(socket.assigns.parent))
+    categories = Store.get_categories(socket.assigns.parent)
+
+    socket
+    |> stream(:categories, categories, reset: true)
+    |> update(:parent, fn
+      %Category{} = p -> %Category{p | leaf?: categories == []}
+      nil -> nil
+    end)
   end
 
   defp back_url([]), do: ~p"/admin/products"

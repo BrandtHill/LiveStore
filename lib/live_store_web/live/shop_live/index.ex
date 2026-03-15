@@ -35,7 +35,7 @@ defmodule LiveStoreWeb.ShopLive.Index do
 
   @impl true
   def handle_params(%{"categories" => url_segments} = _params, _url, socket) do
-    with ltree_path when ltree_path != "" <- url_segments_to_category_ltree(url_segments),
+    with ltree_path when ltree_path != "" <- url_segments_to_ltree(url_segments),
          [_ | _] = ancestors <- Store.get_category_ancestry(ltree_path),
          %Category{} = parent <- List.last(ancestors) do
       {:noreply,

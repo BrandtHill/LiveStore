@@ -73,7 +73,6 @@ defmodule LiveStoreWeb.CategoryComponents do
   end
 
   attr :ancestors, :list, default: []
-  attr :categories, :list, default: []
 
   def admin_breadcrumb(assigns) do
     ~H"""
@@ -121,7 +120,7 @@ defmodule LiveStoreWeb.CategoryComponents do
     |> String.split(".")
   end
 
-  def url_segments_to_category_ltree(segments) do
+  def url_segments_to_ltree(segments) do
     segments
     |> Enum.join(".")
     |> String.downcase()
