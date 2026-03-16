@@ -11,7 +11,7 @@ defmodule LiveStoreWeb.OrderLive.Index do
     <Layouts.app {assigns}>
       <div class="max-w-4xl mx-auto p-6">
         <.header>
-          My Orders
+          {@page_title}
         </.header>
 
         <div
@@ -40,7 +40,7 @@ defmodule LiveStoreWeb.OrderLive.Index do
   def mount(_params, _session, socket) do
     orders = Orders.get_orders_by_user(socket.assigns.current_user)
 
-    {:ok, assign(socket, selected: nil, orders: orders)}
+    {:ok, assign(socket, selected: nil, orders: orders, page_title: "Your Orders")}
   end
 
   @impl true

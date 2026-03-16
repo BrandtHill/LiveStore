@@ -24,7 +24,7 @@ defmodule LiveStoreWeb.OrderLive.Show do
     %Order{user_id: user_id} = order = Orders.get_order(id)
 
     if socket.assigns.current_user.id == user_id do
-      {:ok, assign(socket, :order, order)}
+      {:ok, assign(socket, order: order, page_title: "Your Order")}
     else
       {:ok,
        socket |> put_flash(:error, "Order not found") |> push_navigate(to: ~p"/account/orders")}

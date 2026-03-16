@@ -124,7 +124,7 @@ defmodule LiveStoreWeb.ShopLive.Cart do
               <span>{money(@sub_total + @shipping)}</span>
             </div>
             <.button
-              patch={~p"/cart/checkout"}
+              phx-click={JS.patch(~p"/cart/checkout")}
               disabled={@cart.items == []}
               class="btn btn-primary w-full mt-6"
             >
@@ -174,10 +174,10 @@ defmodule LiveStoreWeb.ShopLive.Cart do
     with :checkout <- socket.assigns.live_action,
          {:ok, %{client_secret: client_secret}} <-
            Stripe.create_checkout_session(socket.assigns.cart, socket.assigns.country) do
-      {:noreply, assign(socket, :client_secret, client_secret)}
+      {:noreply, assign(socket, client_secret: client_secret, page_title: "Checkout")}
     else
       :show ->
-        {:noreply, assign(socket, :client_secret, nil)}
+        {:noreply, assign(socket, client_secret: nil, page_title: "Cart")}
 
       error ->
         Logger.error("Error loading the checkout view: #{inspect(error)}")

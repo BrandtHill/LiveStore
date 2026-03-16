@@ -161,6 +161,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
     socket =
       socket
+      |> assign(:page_title, product.name)
       |> assign(:index, 0)
       |> assign(:product, product)
       |> assign(:ancestors, Store.get_category_ancestry(product))

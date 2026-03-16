@@ -30,7 +30,7 @@ defmodule LiveStoreWeb.ShopLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, assign(socket, :page_title, "All Products")}
   end
 
   @impl true
@@ -40,13 +40,13 @@ defmodule LiveStoreWeb.ShopLive.Index do
          %Category{} = parent <- List.last(ancestors) do
       {:noreply,
        assign(socket,
+         page_title: parent.name,
          ancestors: ancestors,
          categories: Store.get_categories(parent),
          products: Store.query_products_by_category(parent)
        )}
     else
-      _ ->
-        {:noreply, push_patch(socket, to: ~p"/products")}
+      _ -> {:noreply, push_patch(socket, to: ~p"/products")}
     end
   end
 

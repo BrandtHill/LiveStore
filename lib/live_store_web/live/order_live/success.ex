@@ -32,7 +32,7 @@ defmodule LiveStoreWeb.OrderLive.Success do
 
     order = Orders.get_order_by_stripe_checkout_id(checkout_session_id)
 
-    {:ok, assign(socket, order: order)}
+    {:ok, assign(socket, order: order, page_title: "Order Success")}
   end
 
   @impl true
