@@ -1,12 +1,7 @@
 defmodule LiveStoreWeb.Layouts do
   @moduledoc """
-  This module holds different layouts used by your application.
-
-  See the `layouts` directory for all templates available.
-  The "root" layout is a skeleton rendered as part of the
-  application router. The "app" layout is set as the default
-  layout on both `use LiveStoreWeb, :controller` and
-  `use LiveStoreWeb, :live_view`.
+  This module holds layouts and related functionality
+  used by your application.
   """
   use LiveStoreWeb, :html
 
@@ -30,7 +25,7 @@ defmodule LiveStoreWeb.Layouts do
 
   attr :current_user, :map, default: nil
 
-  attr :render_footer, :boolean, default: false
+  attr :render_footer, :boolean, default: true
 
   slot :inner_block, required: true
 
@@ -118,23 +113,25 @@ defmodule LiveStoreWeb.Layouts do
       </div>
     </nav>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto my-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
+    <div class="min-h-screen flex flex-col">
+      <main class="px-4 py-20 sm:px-6 lg:px-8 flex-1">
+        <div class="mx-auto my-4">
+          {render_slot(@inner_block)}
+        </div>
+      </main>
 
-    <footer
-      :if={assigns[:render_footer]}
-      class="relative z-10 text-center py-6 bg-gradient-to-t from-base-300/90 via-base-300/50 to-transparent w-full"
-    >
-      <div class="text-md text-base-content opacity-80">
-        © {Date.utc_today().year} {LiveStore.Config.store_name()} •
-        <.link navigate={~p"/contact"} class="underline hover:text-primary transition">
-          Contact Us
-        </.link>
-      </div>
-    </footer>
+      <footer
+        :if={assigns[:render_footer]}
+        class="text-center py-6 bg-gradient-to-t from-base-300/90 via-base-300/50 to-transparent w-full"
+      >
+        <div class="text-md text-base-content opacity-80">
+          © {Date.utc_today().year} {LiveStore.Config.store_name()} •
+          <.link navigate={~p"/contact"} class="underline hover:text-primary transition">
+            Contact Us
+          </.link>
+        </div>
+      </footer>
+    </div>
 
     <.flash_group flash={@flash} />
     """

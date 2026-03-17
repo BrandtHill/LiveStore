@@ -9,7 +9,7 @@ defmodule LiveStoreWeb.ContactLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app {assigns}>
+    <Layouts.app {assigns} render_footer={false}>
       <div class="max-w-xl mx-auto my-8">
         <.header>Contact Us</.header>
         <.form for={@form} phx-submit="save" phx-change="validate">
