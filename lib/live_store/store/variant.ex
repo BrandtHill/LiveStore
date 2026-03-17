@@ -47,23 +47,18 @@ defmodule LiveStore.Store.Variant do
   end
 
   defp maybe_send_in_stock_notifications(
-         %{action: :update, repo: repo, changes: %{stock: stock}} = changeset
+         %{action: :update, repo: repo, changes: %{stock: stock}, data: %{stock: 0}} = changeset
        )
        when stock > 0 do
-    variant_id = get_field(changeset, :id)
+    variant = apply_changes(changeset)
+    variant = repo.preload(variant, product: from(Product, select: [:name, :slug]))
 
-    in_stock_notifs =
-      repo.all(
-        from InStockNotification,
-          where: [variant_id: ^variant_id],
-          preload: [:user, [variant: :product]]
-      )
-
-    ids = Enum.map(in_stock_notifs, & &1.id)
-    repo.delete_all(from n in InStockNotification, where: n.id in ^ids)
+    query = from InStockNotification, where: [variant_id: ^variant.id]
+    users = repo.all(from n in query, join: u in assoc(n, :user), select: u)
+    {_, nil} = repo.delete_all(query)
 
     Task.start(fn ->
-      Enum.each(in_stock_notifs, &UserNotifier.deliver_in_stock_notification/1)
+      Enum.each(users, &UserNotifier.deliver_in_stock_notification(&1, variant))
     end)
 
     changeset
