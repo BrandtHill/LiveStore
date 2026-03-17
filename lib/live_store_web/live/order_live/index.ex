@@ -40,7 +40,7 @@ defmodule LiveStoreWeb.OrderLive.Index do
   def mount(_params, _session, socket) do
     orders = Orders.get_orders_by_user(socket.assigns.current_user)
 
-    {:ok, assign(socket, selected: nil, orders: orders, page_title: "Your Orders")}
+    {:ok, assign(socket, selected: nil, orders: orders, page_title: "My Orders")}
   end
 
   @impl true

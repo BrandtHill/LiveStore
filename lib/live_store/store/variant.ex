@@ -1,7 +1,10 @@
 defmodule LiveStore.Store.Variant do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
+  alias LiveStore.Accounts.InStockNotification
+  alias LiveStore.Accounts.UserNotifier
   alias LiveStore.Store.Attribute
   alias LiveStore.Store.Product
   alias LiveStore.Uploads.Image
@@ -40,5 +43,31 @@ defmodule LiveStore.Store.Variant do
     |> foreign_key_constraint(:image_id)
     |> unsafe_validate_unique(:sku, LiveStore.Repo)
     |> unique_constraint(:sku)
+    |> prepare_changes(&maybe_send_in_stock_notifications/1)
   end
+
+  defp maybe_send_in_stock_notifications(
+         %{action: :update, repo: repo, changes: %{stock: stock}} = changeset
+       )
+       when stock > 0 do
+    variant_id = get_field(changeset, :id)
+
+    in_stock_notifs =
+      repo.all(
+        from InStockNotification,
+          where: [variant_id: ^variant_id],
+          preload: [:user, [variant: :product]]
+      )
+
+    ids = Enum.map(in_stock_notifs, & &1.id)
+    repo.delete_all(from n in InStockNotification, where: n.id in ^ids)
+
+    Task.start(fn ->
+      Enum.each(in_stock_notifs, &UserNotifier.deliver_in_stock_notification/1)
+    end)
+
+    changeset
+  end
+
+  defp maybe_send_in_stock_notifications(changeset), do: changeset
 end

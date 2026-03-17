@@ -97,9 +97,9 @@ defmodule LiveStore.Orders do
     end)
     |> case do
       {:ok, order} ->
+        Logger.info("Order successfully created: #{inspect(order, pretty: true)}")
         order = preload_order(order)
         StripeCache.delete_shipping_details(session.payment_intent)
-        Logger.info("Order successfully created: #{inspect(order, pretty: true)}")
         Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
         {:ok, order}
 
@@ -147,11 +147,9 @@ defmodule LiveStore.Orders do
     )
   end
 
-  defp preload_order(%Order{} = order) do
+  defp preload_order(order) do
     Repo.preload(order, [:user, items: [variant: :product]])
   end
-
-  defp preload_order(nil), do: nil
 
   def change_tracking_number(%Order{} = order, tracking_number) do
     Order.changeset(order, %{tracking_number: tracking_number})

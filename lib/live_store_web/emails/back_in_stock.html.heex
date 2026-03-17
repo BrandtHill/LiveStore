@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f6f7f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="center" style="padding:24px 16px;">
+          <table
+            role="presentation"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            width="600"
+            style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;"
+          >
+            <tr>
+              <td style="padding:20px 24px;text-align:left;color:#111827;">
+                <h1 style="margin:0 0 8px 0;font-size:20px;">
+                  {@variant.product.name} back in stock
+                </h1>
+
+                <p style="margin:0 0 16px 0;color:#6b7280;">
+                  An item you were interested in is now back in stock on {LiveStore.Config.store_name()}:
+                </p>
+
+                <div style="margin:0 0 16px 0;">
+                  <div style="font-weight:600;font-size:16px;margin-bottom:4px;">
+                    {@variant.product.name}
+                  </div>
+
+                  <div style="font-size:13px;color:#6b7280;margin-bottom:6px;">
+                    SKU: {@variant.sku}
+                  </div>
+
+                  <div style="font-size:13px;color:#6b7280;">
+                    <%= for %{type: type, value: value} <- @variant.attributes do %>
+                      <div><strong style="color:#111827;">{type}:</strong> {value}</div>
+                    <% end %>
+                  </div>
+                </div>
+
+                <p style="text-align:center;margin:24px 0;">
+                  <a
+                    href={url(~p"/products/#{@variant.product.slug}")}
+                    style="background:#111827;color:#ffffff;text-decoration:none;border-radius:6px;padding:12px 18px;display:inline-block;"
+                  >
+                    View product
+                  </a>
+                </p>
+                <hr style="border:none;border-top:1px solid #eef2f6;margin:20px 0;" />
+                <p style="margin:0;color:#9ca3af;font-size:12px;">
+                  You're receiving this email because you requested a back-in-stock notification.
+                  You can manage your in stock notifications
+                  <a href={url(~p"/account/settings")}>here.</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

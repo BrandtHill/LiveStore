@@ -3,8 +3,11 @@ defmodule LiveStore.Accounts.UserNotifier do
 
   alias LiveStore.Mailer
   alias LiveStore.Accounts.ContactForm
+  alias LiveStore.Accounts.InStockNotification
   alias LiveStore.Accounts.User
   alias LiveStore.Config
+  alias LiveStore.Store.Product
+  alias LiveStore.Store.Variant
   alias LiveStoreWeb.Emails
 
   require Logger
@@ -72,6 +75,21 @@ defmodule LiveStore.Accounts.UserNotifier do
     html = Emails.heex_to_html(template)
 
     deliver(user.email, "#{Config.store_name()} - Order Shipped", html)
+  end
+
+  def deliver_in_stock_notification(%InStockNotification{
+        user: %User{} = user,
+        variant: %Variant{product: %Product{}} = variant
+      }) do
+    deliver_in_stock_notification(user, variant)
+  end
+
+  def deliver_in_stock_notification(%User{} = user, %Variant{product: %Product{}} = variant) do
+    Logger.info("Sending in stock notification to #{user.email} for #{variant.sku}")
+    template = Emails.back_in_stock(%{variant: variant})
+    html = Emails.heex_to_html(template)
+
+    deliver(user.email, "#{Config.store_name()} - #{variant.product.name} back in stock", html)
   end
 
   @doc """
