@@ -33,7 +33,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
           />
         </:col>
         <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
-        <:col :let={{_id, product}} label="Description">{preview(product.description)}</:col>
+        <:col :let={{_id, product}} label="Description">{preview(product.description, 40)}</:col>
         <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
         <:col :let={{_id, product}} label="Product Attributes">
           {Enum.join(product.attribute_types || [], ", ")}

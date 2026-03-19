@@ -129,6 +129,19 @@ defmodule LiveStore.Store do
     )
   end
 
+  def get_orphaned_categories() do
+    Repo.all(
+      from c in Category,
+        as: :categories,
+        left_lateral_join:
+          ancestor in subquery(
+            where(Category, path: fragment("subpath(?, 0, -1)", parent_as(:categories).path))
+          ),
+        on: true,
+        where: is_nil(ancestor) and fragment("nlevel(?) > 1", c.path)
+    )
+  end
+
   defp categories_query() do
     from c in Category,
       as: :categories,

@@ -629,13 +629,15 @@ defmodule LiveStoreWeb.CoreComponents do
     end
   end
 
-  def preview(nil), do: nil
+  def preview(text, length \\ 120)
 
-  def preview(text) when is_binary(text) do
-    if String.length(text) <= 120 do
+  def preview(nil, _length), do: nil
+
+  def preview(text, length) when is_binary(text) do
+    if String.length(text) <= length do
       text
     else
-      [String.slice(text, 0, 120), "..."]
+      [String.slice(text, 0, length), "…"]
     end
   end
 
