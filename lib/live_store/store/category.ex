@@ -29,8 +29,9 @@ defmodule LiveStore.Store.Category do
     |> validate_format(:path, ~r/^([a-z0-9_]+\.)*[a-z0-9_]+$/)
     |> validate_format(:path, ~r/^(?!\w+\.(edit|new)$).*/, message: "is unreachable")
     |> prepare_changes(fn
-      %{action: :delete} = c -> reparent_children(c)
-      %{action: :update} = c -> update_children(c)
+      %{action: :delete} = c -> c |> reparent_orphans()
+      %{action: :update} = c -> c |> update_children() |> backfill_ancestors()
+      %{action: :insert} = c -> c |> backfill_ancestors()
       c -> c
     end)
     |> unsafe_validate_unique(:path, LiveStore.Repo)
@@ -76,7 +77,7 @@ defmodule LiveStore.Store.Category do
     |> String.trim("_")
   end
 
-  defp reparent_children(%{repo: repo, data: %{path: path}} = changeset) do
+  defp reparent_orphans(%{repo: repo, data: %{path: path}} = changeset) do
     repo.update_all(
       from(c in __MODULE__,
         where: fragment("? <@ ?", c.path, ^path) and c.path != ^path,
@@ -95,6 +96,54 @@ defmodule LiveStore.Store.Category do
       ),
       set: [updated_at: DateTime.utc_now()]
     )
+
+    changeset
+  end
+
+  defp temp_rename_path(%{data: %{path: path}, repo: repo, action: :update}) when is_binary(path),
+    do: repo.update_all(from(__MODULE__, where: [path: ^path]), set: [path: "TEMP." <> path])
+
+  defp temp_rename_path(_), do: :noop
+
+  defp backfill_ancestors(%{repo: repo, changes: %{path: path}} = changeset) do
+    temp_rename_path(changeset)
+
+    closest_level =
+      repo.one(
+        from c in __MODULE__,
+          where: fragment("? @> ?", c.path, ^path) and c.path != ^path,
+          select: coalesce(max(fragment("nlevel(?)", c.path)), 0)
+      )
+
+    ghosts =
+      repo.all(
+        from level in fragment(
+               "generate_series(? + 1, nlevel(?) - 1)",
+               ^closest_level,
+               ^path
+             ),
+             select: %{
+               path: fragment("subpath(?, 0, ?)", ^path, level),
+               name:
+                 fragment(
+                   "initcap(regexp_replace(subpath(?, ? - 1, 1)::text, '_+', ' ', 'g'))",
+                   ^path,
+                   level
+                 )
+             }
+      )
+
+    entries =
+      Enum.map(
+        ghosts,
+        &Map.merge(&1, %{
+          inserted_at: {:placeholder, :timestamp},
+          updated_at: {:placeholder, :timestamp},
+          id: UUIDv7.generate()
+        })
+      )
+
+    repo.insert_all(__MODULE__, entries, placeholders: %{timestamp: DateTime.utc_now()})
 
     changeset
   end
