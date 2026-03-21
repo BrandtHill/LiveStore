@@ -9,6 +9,8 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
   import LiveStoreWeb.CategoryComponents
 
+  require Logger
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -175,6 +177,14 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
       )
 
     {:ok, socket}
+  rescue
+    _ ->
+      Logger.warning("Error loading product page for slug #{slug}. Redirecting to /products")
+
+      {:ok,
+       socket
+       |> put_flash(:info, ~s|"#{slug}" not found or renamed. Redirecting to all products.|)
+       |> push_navigate(to: ~p"/products")}
   end
 
   @impl true
