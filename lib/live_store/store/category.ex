@@ -78,6 +78,8 @@ defmodule LiveStore.Store.Category do
   end
 
   defp reparent_orphans(%{repo: repo, data: %{path: path}} = changeset) do
+    temp_rename_path(changeset)
+
     repo.update_all(
       from(c in __MODULE__,
         where: fragment("? <@ ?", c.path, ^path) and c.path != ^path,
@@ -100,7 +102,7 @@ defmodule LiveStore.Store.Category do
     changeset
   end
 
-  defp temp_rename_path(%{data: %{path: path}, repo: repo, action: :update}) when is_binary(path),
+  defp temp_rename_path(%{data: %{path: path}, repo: repo}) when is_binary(path),
     do: repo.update_all(from(__MODULE__, where: [path: ^path]), set: [path: "TEMP." <> path])
 
   defp temp_rename_path(_), do: :noop
