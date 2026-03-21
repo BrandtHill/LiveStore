@@ -29,25 +29,26 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
           <img
             :if={length(product.images) > 0}
             src={image_path(product)}
-            class="aspect-square object-cover rounded-lg w-20"
+            class="aspect-square object-cover rounded-lg w-24"
           />
         </:col>
         <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
-        <:col :let={{_id, product}} label="Description">{preview(product.description, 40)}</:col>
         <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
         <:col :let={{_id, product}} label="Product Attributes">
-          {Enum.join(product.attribute_types || [], ", ")}
+          <ul class="list-disc">
+            <li :for={attr <- product.attribute_types || []}>{attr}</li>
+          </ul>
         </:col>
         <:col :let={{_id, product}} label="Variants">
           <.tooltip :if={product.variants == []} message="You need at least 1 variant per product.">
             <span class="flex items-center gap-1">
-              <span class="text-error">{length(product.variants)}</span>
-              <.icon name="hero-information-circle" class="size-3" />
+              <.icon name="hero-information-circle" class="size-5 text-error" />
             </span>
           </.tooltip>
-          <span :if={product.variants != []}>
-            {length(product.variants)}
-          </span>
+          <div :for={variant <- product.variants} class="text-sm font-mono">
+            {variant.sku}:
+            <span class={if variant.stock == 0, do: "text-error"}>{variant.stock}</span>
+          </div>
         </:col>
 
         <:action :let={{_id, product}}>
