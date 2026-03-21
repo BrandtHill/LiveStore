@@ -31,6 +31,7 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
         </div>
 
         <%= if @parent && @parent.leaf? do %>
+          <div class="divider" />
           <div class="text-sm font-semibold mx-2 text-base-content">
             <p>This is a leaf category that products can be added to.</p>
             <p>Or, a new leaf category can be created to turn this into a parent category.</p>
@@ -44,13 +45,16 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
             }
           >
             <:col :let={{_id, category}} label="Name">{category.name}</:col>
-            <:col :let={{_id, category}} label="Path">{category.path}</:col>
+            <:col :let={{_id, category}} label="Path">
+              {category.path}
+              <.error :for={{msg, _} <- @errors[category.id] || []}>{msg}</.error>
+            </:col>
             <:action :let={{_id, category}}>
               <.button navigate={~p"/admin/products/categories/#{category}/edit"}>Edit</.button>
             </:action>
-            <:action :let={{id, category}}>
+            <:action :let={{_id, category}}>
               <.button
-                phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
+                phx-click={JS.push("delete", value: %{id: category.id})}
                 data-confirm="Are you sure? Child categories will be reparented."
               >
                 Delete
@@ -67,7 +71,7 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :categories, [])}
+    {:ok, socket |> assign(:errors, %{}) |> stream(:categories, [])}
   end
 
   @impl true
@@ -92,9 +96,14 @@ defmodule LiveStoreWeb.AdminLive.Category.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     category = Store.get_category(id)
 
-    {:ok, _category} = Store.delete_category(category)
+    case Store.delete_category(category) do
+      {:ok, _category} ->
+        {:noreply, socket |> stream_delete(:categories, category) |> update_categories()}
 
-    {:noreply, socket |> update_categories()}
+      {:error, changeset} ->
+        errors = Map.put(socket.assigns.errors, id, Keyword.get_values(changeset.errors, :path))
+        {:noreply, socket |> stream_insert(:categories, category) |> assign(:errors, errors)}
+    end
   end
 
   defp update_categories(socket) do

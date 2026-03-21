@@ -5,6 +5,8 @@ defmodule LiveStore.Store.Category do
 
   alias LiveStore.Store.Product
 
+  require Logger
+
   @primary_key {:id, UUIDv7, autogenerate: true}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec
@@ -100,6 +102,19 @@ defmodule LiveStore.Store.Category do
     )
 
     changeset
+  rescue
+    error ->
+      case error do
+        %Postgrex.Error{postgres: %{code: :unique_violation}} ->
+          Logger.error(
+            "Error deleting Category #{path} due to unique constraint violation reparenting orphans."
+          )
+
+          add_error(changeset, :path, "unable to reparent children due to conflicting paths")
+
+        error ->
+          reraise error, __STACKTRACE__
+      end
   end
 
   defp temp_rename_path(%{data: %{path: path}, repo: repo}) when is_binary(path),
