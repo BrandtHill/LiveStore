@@ -19,56 +19,60 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
         </:actions>
       </.header>
 
-      <.table
-        id="products"
-        rows={@streams.products}
-        row_click={fn {_id, product} -> JS.navigate(~p"/admin/products/#{product}") end}
-      >
-        <:col :let={{_id, product}} label="Name">{product.name}</:col>
-        <:col :let={{_id, product}} label="Photo">
-          <img
-            :if={length(product.images) > 0}
-            src={image_path(product)}
-            class="aspect-square object-cover rounded-lg w-24"
-          />
-        </:col>
-        <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
-        <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
-        <:col :let={{_id, product}} label="Product Attributes">
-          <ul class="list-disc">
-            <li :for={attr <- product.attribute_types || []}>{attr}</li>
-          </ul>
-        </:col>
-        <:col :let={{_id, product}} label="Variants">
-          <.tooltip :if={product.variants == []} message="You need at least 1 variant per product.">
-            <span class="flex items-center gap-1">
-              <.icon name="hero-information-circle" class="size-5 text-error" />
-            </span>
-          </.tooltip>
-          <div :for={variant <- product.variants} class="text-sm font-mono">
-            {variant.sku}:
-            <span class={if variant.stock == 0, do: "text-error"}>{variant.stock}</span>
-          </div>
-        </:col>
+      <div class="overflow-x-auto">
+        <.table
+          id="products"
+          rows={@streams.products}
+          row_click={fn {_id, product} -> JS.navigate(~p"/admin/products/#{product}") end}
+        >
+          <:col :let={{_id, product}} label="Name">
+            <div class="min-w-max">{product.name}</div>
+          </:col>
+          <:col :let={{_id, product}} label="Photo">
+            <img
+              :if={length(product.images) > 0}
+              src={image_path(product)}
+              class="aspect-square object-cover rounded-lg w-24"
+            />
+          </:col>
+          <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
+          <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
+          <:col :let={{_id, product}} label="Product Attributes">
+            <ul class="list-disc">
+              <li :for={attr <- product.attribute_types || []}>{attr}</li>
+            </ul>
+          </:col>
+          <:col :let={{_id, product}} label="Variants">
+            <.tooltip :if={product.variants == []} message="You need at least 1 variant per product.">
+              <span class="flex items-center gap-1">
+                <.icon name="hero-information-circle" class="size-5 text-error" />
+              </span>
+            </.tooltip>
+            <div :for={variant <- product.variants} class="text-sm font-mono min-w-max">
+              {variant.sku}:
+              <span class={if variant.stock == 0, do: "text-error"}>{variant.stock}</span>
+            </div>
+          </:col>
 
-        <:action :let={{_id, product}}>
-          <.button navigate={~p"/admin/products/#{product}/variants"}>Manage Variants</.button>
-        </:action>
-        <:action :let={{_id, product}}>
-          <div class="sr-only">
-            <.button navigate={~p"/admin/products/#{product}"}>Show</.button>
-          </div>
-          <.button patch={~p"/admin/products/#{product}/edit"}>Edit</.button>
-        </:action>
-        <:action :let={{id, product}}>
-          <.button
-            phx-click={JS.push("delete", value: %{id: product.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
-          >
-            Delete
-          </.button>
-        </:action>
-      </.table>
+          <:action :let={{_id, product}}>
+            <.button navigate={~p"/admin/products/#{product}/variants"}>Manage Variants</.button>
+          </:action>
+          <:action :let={{_id, product}}>
+            <div class="sr-only">
+              <.button navigate={~p"/admin/products/#{product}"}>Show</.button>
+            </div>
+            <.button patch={~p"/admin/products/#{product}/edit"}>Edit</.button>
+          </:action>
+          <:action :let={{id, product}}>
+            <.button
+              phx-click={JS.push("delete", value: %{id: product.id}) |> hide("##{id}")}
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.button>
+          </:action>
+        </.table>
+      </div>
     </Layouts.app>
     """
   end
