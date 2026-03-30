@@ -2,6 +2,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
   use LiveStoreWeb, :live_view
 
   alias LiveStore.Store
+  alias LiveStore.Store.Category
   alias LiveStore.Store.Product
   alias LiveStore.Uploads
 
@@ -74,6 +75,37 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
             >
               + Add Attribute Type
             </.button>
+          </div>
+
+          <div class="my-4 pb-10">
+            <.input
+              type="text"
+              field={@form[:category_id]}
+              label="Category"
+              hidden
+            />
+
+            <div :if={@category.id} class="px-2 pb-1">
+              <code class="px-1.5 py-0.5 rounded-md bg-base-300 text-xs font-mono">
+                {Category.to_url(@category)}
+              </code>
+              <span class="px-2">{@category.name}</span>
+              <.button
+                class="btn btn-sm h-8.5 w-min"
+                type="button"
+                phx-click="clear_category"
+              >
+                <.icon name="hero-x-mark" />
+              </.button>
+            </div>
+
+            <div class="mt-2 flex">
+              <.live_component
+                module={LiveStoreWeb.CategoryMenuComponent}
+                id="product-form-category-menu"
+              />
+              <span class="pt-0.5">Select Category</span>
+            </div>
           </div>
 
           <div class="py-4">
@@ -150,7 +182,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
     {product, page_title, return_path} =
       case socket.assigns.live_action do
         :new ->
-          {%Product{images: []}, "New product", ~p"/admin/products"}
+          {%Product{images: [], category: nil}, "New product", ~p"/admin/products"}
 
         :edit ->
           id = params["id"]
@@ -165,6 +197,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
     {:ok,
      socket
      |> assign(:product, product)
+     |> assign(:category, product.category || %Category{})
      |> assign(:page_title, page_title)
      |> assign(:return_path, return_path)
      |> assign(:attribute_types, product.attribute_types)
@@ -173,7 +206,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
      |> allow_upload(:new_images, accept: ~w(image/*), max_entries: 20, max_file_size: 25_000_000)
      |> assign_new(:form, fn ->
        to_form(Store.change_product(product))
-     end), temporary_assigns: [form: nil]}
+     end)}
   end
 
   @impl true
@@ -245,6 +278,24 @@ defmodule LiveStoreWeb.AdminLive.Product.Form do
       |> prioritize_images()
 
     {:noreply, assign(socket, :all_images, all_images)}
+  end
+
+  def handle_event("clear_category", _params, socket) do
+    update_category(%Category{}, socket)
+  end
+
+  @impl true
+  def handle_info({:category_selected, category}, socket) do
+    update_category(category, socket)
+  end
+
+  defp update_category(category, socket) do
+    changeset = Ecto.Changeset.put_change(socket.assigns.form.source, :category_id, category.id)
+
+    {:noreply,
+     socket
+     |> assign(:category, category)
+     |> assign(:form, to_form(changeset, action: :validate))}
   end
 
   defp update_all_images(socket) do

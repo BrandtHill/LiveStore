@@ -79,6 +79,11 @@ defmodule LiveStore.Store.Category do
     |> String.trim("_")
   end
 
+  def to_url(%__MODULE__{path: nil}), do: nil
+
+  def to_url(%__MODULE__{path: path}),
+    do: path |> String.replace(".", "/") |> String.replace("_", "-")
+
   defp reparent_orphans(%{repo: repo, data: %{path: path}} = changeset) do
     temp_rename_path(changeset)
 

@@ -19,6 +19,7 @@ defmodule LiveStoreWeb.AdminLive.Product.Show do
       <.list>
         <:item title="Name">{@product.name}</:item>
         <:item title="URL">{"/products/#{@product.slug}"}</:item>
+        <:item title="Category">{@product.category && @product.category.name}</:item>
         <:item title="Description">
           <div class="prose prose-sm max-w-none">
             {raw(render_markdown(@product.description))}

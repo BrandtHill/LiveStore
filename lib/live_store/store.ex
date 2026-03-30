@@ -21,7 +21,7 @@ defmodule LiveStore.Store do
 
   def list_products do
     Product
-    |> preload([:variants, :images])
+    |> preload([:variants, :images, :category])
     |> Repo.all()
   end
 
@@ -46,7 +46,7 @@ defmodule LiveStore.Store do
   def get_product!(id) do
     Product
     |> Repo.get!(id)
-    |> Repo.preload([:variants, :images])
+    |> Repo.preload([:variants, :images, :category])
   end
 
   def get_product_by_slug!(slug) do

@@ -36,6 +36,9 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
             />
           </:col>
           <:col :let={{_id, product}} label="URL">{"/products/#{product.slug}"}</:col>
+          <:col :let={{_id, product}} label="Category">
+            {product.category && product.category.name}
+          </:col>
           <:col :let={{_id, product}} label="Price">{money(product.price)}</:col>
           <:col :let={{_id, product}} label="Product Attributes">
             <ul class="list-disc">
