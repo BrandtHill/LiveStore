@@ -73,7 +73,7 @@ defmodule LiveStore.Orders do
       end)
 
       shipping_details =
-        session.shipping_details ||
+        session.collected_information[:shipping_details] ||
           StripeCache.get_shipping_details(session.payment_intent) ||
           session.customer_details
 
@@ -103,7 +103,9 @@ defmodule LiveStore.Orders do
         Task.start(fn -> UserNotifier.deliver_order_confirmation(order.user, order) end)
         {:ok, order}
 
-      {:error, _error} when is_nil(session.shipping_details) ->
+      {:error, _error}
+      when not is_map_key(session.collected_information, :shipping_details) or
+             is_nil(session.collected_information.shipping_details) ->
         Logger.error(
           "Shipping Address not found when creating order. Fetching Checkout Session from Stripe API and retrying."
         )

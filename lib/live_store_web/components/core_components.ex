@@ -650,7 +650,7 @@ defmodule LiveStoreWeb.CoreComponents do
   def render_markdown(markdown) do
     markdown
     |> to_string()
-    |> Earmark.as_html!()
+    |> MDEx.to_html!()
     |> HtmlSanitizeEx.markdown_html()
     |> String.replace(
       ~r/<a href="(\/[^"]*)">/,

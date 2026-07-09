@@ -6,7 +6,7 @@ defmodule LiveStore.Store.Product do
   alias LiveStore.Store.Variant
   alias LiveStore.Uploads.Image
 
-  @primary_key {:id, UUIDv7, autogenerate: true}
+  @primary_key {:id, Ecto.UUID, autogenerate: [version: 7]}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec
 

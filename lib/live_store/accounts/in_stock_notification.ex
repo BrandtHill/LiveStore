@@ -6,7 +6,7 @@ defmodule LiveStore.Accounts.InStockNotification do
   alias LiveStore.Accounts.User
   alias LiveStore.Store.Variant
 
-  @primary_key {:id, UUIDv7, autogenerate: true}
+  @primary_key {:id, Ecto.UUID, autogenerate: [version: 7]}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec, updated_at: false
 

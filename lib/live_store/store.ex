@@ -217,7 +217,7 @@ defmodule LiveStore.Store do
 
   ## Carts
 
-  def build_cart(id \\ UUIDv7.generate()) do
+  def build_cart(id \\ Ecto.UUID.generate(version: 7)) do
     %Cart{id: id, items: []}
   end
 

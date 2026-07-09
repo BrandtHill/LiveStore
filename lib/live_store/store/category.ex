@@ -7,7 +7,7 @@ defmodule LiveStore.Store.Category do
 
   require Logger
 
-  @primary_key {:id, UUIDv7, autogenerate: true}
+  @primary_key {:id, Ecto.UUID, autogenerate: [version: 7]}
   @foreign_key_type :binary_id
   @timestamps_opts type: :utc_datetime_usec
 
@@ -161,7 +161,7 @@ defmodule LiveStore.Store.Category do
         &Map.merge(&1, %{
           inserted_at: {:placeholder, :timestamp},
           updated_at: {:placeholder, :timestamp},
-          id: UUIDv7.generate()
+          id: Ecto.UUID.generate(version: 7)
         })
       )
 

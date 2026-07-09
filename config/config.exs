@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :hackney, default_protocols: [:http1]
+
 config :live_store,
   ecto_repos: [LiveStore.Repo],
   generators: [timestamp_type: :utc_datetime_usec, binary_id: true]

@@ -18,7 +18,7 @@ defmodule LiveStore.Uploads do
           i
           |> Map.put(:inserted_at, {:placeholder, :timestamp})
           |> Map.put(:updated_at, {:placeholder, :timestamp})
-          |> Map.put_new_lazy(:id, &UUIDv7.generate/0)
+          |> Map.put_new_lazy(:id, fn -> Ecto.UUID.generate(version: 7) end)
         end
       )
 

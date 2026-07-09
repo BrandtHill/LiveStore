@@ -37,10 +37,9 @@ defmodule LiveStore.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.0"},
       {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.13"},
-      {:earmark, "~> 1.4"},
+      {:ecto_sql, "~> 3.14"},
+      {:mdex, "~> 0.13"},
       {:html_sanitize_ex, "~> 1.4"},
-      {:uuidv7, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -63,7 +62,7 @@ defmodule LiveStore.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:money, "~> 1.14"},
+      {:money, "~> 1.15"},
       {:vix, "~> 0.35"},
       {:stripity_stripe, "~> 3.2"}
     ]
