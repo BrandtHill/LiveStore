@@ -64,7 +64,7 @@ defmodule LiveStore.MixProject do
       {:bandit, "~> 1.5"},
       {:money, "~> 1.15"},
       {:vix, "~> 0.35"},
-      {:stripity_stripe, "~> 3.2"}
+      {:stripity_stripe, ">= 3.3.2"}
     ]
   end
 
