@@ -93,6 +93,7 @@ defmodule LiveStoreWeb.AdminLive.Variant.Form do
       |> Enum.flat_map(fn v -> v.attributes end)
       |> Enum.group_by(& &1.type, & &1.value)
       |> Map.new(fn {t, v} -> {t, Enum.uniq(v)} end)
+      |> Map.merge(Map.new(product.attribute_types, &{&1, []}), fn _, v, _ -> v end)
 
     {:ok,
      socket

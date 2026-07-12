@@ -180,7 +180,22 @@ defmodule LiveStore.Store do
     Repo.all(from Variant, where: [product_id: ^product_id])
   end
 
-  def get_variant(variant_id), do: Repo.get(Variant, variant_id)
+  def get_variant(variant_id) do
+    with {%Variant{attributes: attributes} = variant, attribute_types} <-
+           Repo.one(
+             from v in Variant,
+               join: p in assoc(v, :product),
+               select: {v, p.attribute_types},
+               where: v.id == ^variant_id
+           ) do
+      existing_set = MapSet.new(attributes, & &1.type)
+
+      attribute_types
+      |> Enum.reject(fn type -> MapSet.member?(existing_set, type) end)
+      |> Enum.map(fn type -> %Attribute{id: UUID.generate(), type: type} end)
+      |> then(&%Variant{variant | attributes: attributes ++ &1})
+    end
+  end
 
   def build_variant(%Product{attribute_types: types} = product) do
     attributes = Enum.map(types, fn type -> %Attribute{id: UUID.generate(), type: type} end)

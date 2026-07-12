@@ -190,7 +190,13 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
   @impl true
   def handle_params(%{"variant" => sku}, _url, socket) do
     if selected_variant = Enum.find(socket.assigns.product.variants, &(&1.sku == sku)) do
-      selected_attributes = Map.new(selected_variant.attributes, &{&1.type, &1.value})
+      variant_attributes = Map.new(selected_variant.attributes, &{&1.type, &1.value})
+
+      selected_attributes =
+        Map.new(socket.assigns.selected_attributes, fn {type, _previous} ->
+          {type, variant_attributes[type]}
+        end)
+
       attribute_map = create_attribute_map(socket.assigns.product.variants, selected_attributes)
 
       {:noreply,
@@ -296,6 +302,7 @@ defmodule LiveStoreWeb.ShopLive.ProductPage do
 
       {type, values}
     end)
+    |> Map.merge(Map.new(selected_attributes, fn {type, _} -> {type, []} end), fn _, v, _ -> v end)
   end
 
   defp selectable_attributes(variants, selected_attributes, type) do

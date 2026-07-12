@@ -67,12 +67,12 @@ defmodule LiveStoreWeb.ShopLive.CarouselComponent do
 
   @impl true
   def handle_event("next", _params, socket) do
-    index = rem(socket.assigns.index + 1, length(socket.assigns.images))
+    index = Integer.mod(socket.assigns.index + 1, length(socket.assigns.images))
     {:noreply, assign(socket, :index, index)}
   end
 
   def handle_event("prev", _params, socket) do
-    index = rem(socket.assigns.index - 1, length(socket.assigns.images))
+    index = Integer.mod(socket.assigns.index - 1, length(socket.assigns.images))
     {:noreply, assign(socket, :index, index)}
   end
 
