@@ -35,12 +35,27 @@ defmodule LiveStoreWeb.AdminLive.Variant.Form do
           </div>
           <.inputs_for :let={attr} field={@form[:attributes]}>
             <.input hidden field={attr[:type]} />
-            <.input
-              type="text"
-              field={attr[:value]}
-              label={"Attribute #{attr.index + 1}: #{attr[:type].value}"}
-            />
+            <div class="flex items-bottom gap-2 my-1">
+              <.input
+                type="text"
+                field={attr[:value]}
+                label={"Attribute #{attr.index + 1}: #{attr[:type].value}"}
+              />
+              <%= if attr[:type].value not in @product.attribute_types do %>
+                <.button
+                  class="btn btn-sm h-8.5 btn-soft mt-6.5"
+                  type="button"
+                  name="variant[attributes_drop][]"
+                  value={attr.index}
+                  phx-click={JS.dispatch("change")}
+                ><.icon name="hero-x-mark-solid" /></.button>
+                <span class="text-sm text-base-warning mt-8">
+                  <b class="font-mono text-primary">{attr[:type].value}</b> is an orphaned attribute
+                </span>
+              <% end %>
+            </div>
           </.inputs_for>
+          <input type="hidden" name="variant[attributes_drop][]" />
 
           <div class="mt-6">
             <label class="text-xs opacity-60 mb-2">Variant Image</label>

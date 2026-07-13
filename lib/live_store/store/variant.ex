@@ -34,7 +34,7 @@ defmodule LiveStore.Store.Variant do
   def changeset(variant \\ %__MODULE__{}, params) do
     variant
     |> cast(params, @allowed_fields)
-    |> cast_embed(:attributes)
+    |> cast_embed(:attributes, drop_param: :attributes_drop)
     |> validate_required(@required_fields)
     |> validate_number(:stock, greater_than_or_equal_to: 0)
     |> validate_number(:price_override, greater_than_or_equal_to: 0)
