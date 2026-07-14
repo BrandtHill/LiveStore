@@ -54,6 +54,9 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
             <div :for={variant <- product.variants} class="text-sm font-mono min-w-max">
               {variant.sku}:
               <span class={if variant.stock == 0, do: "text-error"}>{variant.stock}</span>
+              <span :if={@variant_validations[product.id][variant.id].has_missing} class="text-error">Missing Attributes</span>
+              <span :if={@variant_validations[product.id][variant.id].has_orphans} class="text-error">Missing Orphans</span>
+              <span :if={@variant_validations[product.id][variant.id].ambiguous} class="text-error">Ambiguous Attributes</span>
             </div>
           </:col>
 
@@ -82,9 +85,14 @@ defmodule LiveStoreWeb.AdminLive.Product.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    products = Store.list_products()
+
+    variant_validations = Map.new(products, fn p -> {p.id, Store.validate_variants(p)} end)
+
     {:ok,
      socket
-     |> stream(:products, Store.list_products())
+     |> stream(:products, products)
+     |> assign(:variant_validations, variant_validations)
      |> assign(:page_title, "Listing products")}
   end
 

@@ -73,6 +73,30 @@ defmodule LiveStore.Store do
     Repo.preload(product, :variants, force: true)
   end
 
+  def validate_variants(%Product{variants: variants, attribute_types: types}) do
+    variant_map =
+      Enum.reduce(variants, %{}, fn %Variant{attributes: attributes, id: id}, acc ->
+        attribute_map = Map.new(attributes, &{&1.type, &1.value})
+        has_orphans? = Enum.any?(attributes, &(&1.type not in types))
+        has_missing? = Enum.any?(types, &(not Map.has_key?(attribute_map, &1)))
+        signature = Enum.map(types, fn type -> {type, attribute_map[type]} end)
+
+        Map.put(acc, id, %{
+          has_orphans: has_orphans?,
+          has_missing: has_missing?,
+          hash: :erlang.phash2(signature)
+        })
+      end)
+
+    ambiguous_ids =
+      variant_map
+      |> Enum.group_by(fn {_, map} -> map.hash end, fn {id, _} -> id end)
+      |> Enum.filter(fn {_hash, ids} -> length(ids) > 1 end)
+      |> Enum.flat_map(fn {_hash, ids} -> ids end)
+
+    Map.new(variant_map, fn {id, map} -> {id, Map.put(map, :ambiguous, id in ambiguous_ids)} end)
+  end
+
   ## Categories
 
   def get_categories(parent \\ nil)
