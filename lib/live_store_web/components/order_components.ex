@@ -18,9 +18,13 @@ defmodule LiveStoreWeb.OrderComponents do
         </div>
         <div>
           <h3 class="font-semibold text-lg">Status</h3>
-          <span class="badge badge-outline badge-lg capitalize">
+          <div class="badge badge-outline badge-lg capitalize">
             {@order.status}
-          </span>
+          </div>
+          <div :if={@order.tracking_number} class="mt-4">
+            <h3 class="font-semibold text-md">Tracking Number</h3>
+            <div>{@order.tracking_number}</div>
+          </div>
         </div>
         <div>
           <h3 class="font-semibold text-lg mb-2">Order Summary</h3>
